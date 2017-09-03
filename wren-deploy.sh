@@ -155,17 +155,17 @@ compile_current_release() {
 }
 
 deploy_all_releases() {
-  echo "Deploying all releases"
+  echo "Deploying all releases to '${provider}'"
   package_deploy_all_versions "${MAVEN_PACKAGE}"
 }
 
 deploy_current_release() {
-  echo "Deploying current release"
+  echo "Deploying current release to '${provider}'"
   package_deploy_current_version
 }
 
 delete_all_releases() {
-  echo "Deleting all releases from remote"
+  echo "Deleting all releases from '${provider}'"
 
   if [ "${provider}" == "jfrog" ]; then
     package_delete_from_jfrog "${MAVEN_PACKAGE}" "${JFROG_PACKAGE}"

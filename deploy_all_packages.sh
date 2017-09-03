@@ -23,11 +23,19 @@ fi
 parent_failed=1
 tools_failed=1
 
+# We expect failures until we're done with the cycle
 set +e
-set -x
 
 # Workaround for cyclic dependencies...
 until [[ "$parent_failed" -eq 0 && "$tools_failed" -eq 0 ]]; do
+  echo "======================================================================="
+  echo "Pre-compiling WrenSec Build Tools and WrenSec Parent POM"
+  echo "======================================================================="
+  echo "Due to cyclic dependencies between these two projects, it is safe to"
+  echo "ignore any intermittent failures you see below until all versions of "
+  echo "both projects compile."
+  echo
+
   cd ./wrensec-build-tools
   ../wrensec-deploy-tool/wren-deploy.sh compile-all-releases $@
   tools_failed=$?
@@ -42,7 +50,14 @@ done;
 set -e
 
 for project in ${PROJECTS[*]}; do
+  echo "======================================================================="
+  echo "Deploying ${project}"
+  echo "======================================================================="
+
   cd "./${project}"
   ../wrensec-deploy-tool/wren-deploy.sh deploy-all-releases $@
   cd ..
+
+  echo
+  echo
 done

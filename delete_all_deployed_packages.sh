@@ -20,10 +20,15 @@ fi
 
 rm -rf ~/.m2/repository
 
-set -x
-
 for project in ${PROJECTS[*]}; do
+  echo "======================================================================="
+  echo "Deleting ${project}"
+  echo "======================================================================="
+
   cd "./${project}"
   ../wrensec-deploy-tool/wren-deploy.sh delete-all-releases $@
   cd ..
+
+  echo
+  echo
 done
