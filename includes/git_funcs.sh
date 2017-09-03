@@ -32,30 +32,33 @@ git_bulk_cherry_pick() {
   fi
 
   for tag in $(git_list_release_tags "${MAVEN_PACKAGE}"); do
-    git checkout "sustaining/${tag}" >/dev/null
+    current_branch_name="sustaining/${tag}"
 
-    current_revision=$(git rev-parse HEAD)
-
-    #echo "[DEBUG] Cherry pick: ${cherrypick_revision}"
-    #echo "[DEBUG] Onto: ${current_revision}"
-    #echo
-
-    if [[ "${cherry_picking_started}" -eq 0 && \
-          "${current_revision}" == "${starting_target_rev}" ]]; then
-      cherry_picking_started=1
-    fi
-
-    if [[ "${cherry_picking_started}" -ne 1 ]]; then
-      echo "Skipping '${current_revision:0:7}'..."
-
-    elif [ "${current_revision}" == "${git_revision}" ]; then
-      echo "Will not cherry pick ${ref_desc} on to '${current_revision:0:7}' "\
-           "(same revision)."
-
+    if ! package_accept_release_tag "${tag}"; then
+      echo "Will not cherry pick ${ref_desc} on to '${current_branch_name}'" \
+           "(tag skipped by .wren-deploy.rc)."
     else
-      echo "Cherry picking ${ref_desc} on to '${current_revision:0:7}'"
-      echo
-      git cherry-pick "${git_revision}"
+      git checkout "${current_branch_name}" >/dev/null
+
+      current_revision=$(git rev-parse HEAD)
+
+      if [[ "${cherry_picking_started}" -eq 0 && \
+            "${current_revision}" == "${starting_target_rev}" ]]; then
+        cherry_picking_started=1
+      fi
+
+      if [[ "${cherry_picking_started}" -ne 1 ]]; then
+        echo "Skipping '${current_revision:0:7}'..."
+
+      elif [ "${current_revision}" == "${git_revision}" ]; then
+        echo "Will not cherry pick ${ref_desc} on to" \
+             "'${current_revision:0:7}' (same revision)."
+
+      else
+        echo "Cherry picking ${ref_desc} on to '${current_revision:0:7}'"
+        echo
+        git cherry-pick "${git_revision}"
+      fi
     fi
 
     echo
