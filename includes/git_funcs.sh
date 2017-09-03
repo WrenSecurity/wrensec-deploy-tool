@@ -63,3 +63,11 @@ git_bulk_cherry_pick() {
 
   git checkout "${revision_at_start}"
 }
+
+git_list_release_tags() {
+  # FR sometimes called the release tags something like "forgerock-parent-1.1.0"
+  # instead of just "1.1.0"
+  exclude_prefix="${1}"
+
+  git tag | sed "s/${exclude_prefix}-//" | sort -V
+}

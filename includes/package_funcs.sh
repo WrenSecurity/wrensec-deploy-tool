@@ -4,7 +4,7 @@
 package_compile_all_versions() {
   local maven_package="${1}"
 
-  for tag in $(git tag | sed "s/${maven_package}-//" | sort -V); do
+  for tag in $(git_list_release_tags "${maven_package}"); do
     if package_accept_release_tag "${tag}"; then
       git checkout "sustaining/${tag}"
       package_compile_current_version
@@ -17,7 +17,7 @@ package_deploy_all_versions() {
   
   package_prompt_for_gpg_credentials
 
-  for tag in $(git tag | sed "s/${maven_package}-//" | sort -V); do
+  for tag in $(git_list_release_tags "${maven_package}"); do
     if accept_release_tag "${tag}"; then
       git checkout "sustaining/${tag}"
       deploy_current_package_version
@@ -43,7 +43,7 @@ package_delete_from_bintray() {
 
   package_prompt_for_bintray_credentials
 
-  for tag in $(git tag | sed "s/${maven_package}-//" | sort -V); do
+  for tag in $(git_list_release_tags "${maven_package}"); do
     set -x
     curl -X "DELETE" -u "${BINTRAY_USERNAME}:${BINTRAY_PASSWORD}" \
       "https://api.bintray.com/packages/wrensecurity/releases/${bintray_package}/versions/${tag}"
