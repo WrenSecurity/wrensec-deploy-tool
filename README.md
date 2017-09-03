@@ -6,17 +6,17 @@ Usage: `wren-deploy.sh <COMMAND> [--with-provider=PROVIDER]`
 
 Where `COMMAND` can be any of the following:
   - `create-sustaining-branches`  
-    Creates 'sustaining/X.Y.Z' branches in the current package
+    Creates `sustaining/X.Y.Z` branches in the current package
     from all release tags in the package.
 
   - `delete-sustaining-branches`  
-    Deletes all 'sustaining/X.Y.Z' branches from the current
+    Deletes all `sustaining/X.Y.Z` branches from the current
     package.
 
   - `patch-all-releases [SRC-REF] [STARTING-RELEASE-TAG]`  
-    Cherry-picks either HEAD or SRC-REF on to all release
+    Cherry-picks either `HEAD` or `SRC-REF` on to all release
     branches, optionally targeting only the release identified by
-    the specified STARTING-RELEASE-TAG and later releases
+    the specified `STARTING-RELEASE-TAG` and later releases
     (typically to resume a cherry pick after fixing conflicts).
 
   - `compile-all-releases`  
