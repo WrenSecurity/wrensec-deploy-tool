@@ -37,16 +37,16 @@ until [[ "$parent_failed" -eq 0 && "$tools_failed" -eq 0 ]]; do
   echo "both projects compile."
   echo
 
-  cd ./wrensec-build-tools
-  ../wrensec-deploy-tool/wren-deploy.sh compile-all-releases $@
-  tools_failed=$?
-  cd ..
-
   cd ./wrensec-parent
   ../wrensec-deploy-tool/wren-deploy.sh compile-all-releases $@
   parent_failed=$?
   cd ..
-done;
+
+  cd ./wrensec-build-tools
+  ../wrensec-deploy-tool/wren-deploy.sh compile-all-releases $@
+  tools_failed=$?
+  cd ..
+done
 
 set -e
 
