@@ -135,10 +135,12 @@ prepare_subcommand_args() {
 # Commands
 ################################################################################
 create_sustaining_branches() {
+  echo "Creating all missing sustaining branches"
   package_create_all_sustaining_branches
 }
 
 delete-sustaining-branches() {
+  echo "Deleting all existing sustaining branches"
   package_delete_all_sustaining_branches
 }
 
@@ -146,6 +148,7 @@ patch_all_releases() {
   local src_ref="${1:-HEAD}"
   local first_dst_ref="${2:-UNSET}"
 
+  echo "Patching all releases"
   git_bulk_cherry_pick "${src_ref}" "${first_dst_ref}"
 }
 
