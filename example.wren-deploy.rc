@@ -1,0 +1,25 @@
+##
+# A sample '.wren-deploy.rc' file, taken from the 'wrensec-build-tools' package.
+#
+# A file named '.wren-deploy.rc' must be created in the top-level folder of
+# each Maven package that Wren Deploy will interact with.
+#
+# The `package_accept_release_tag() function is optional -- if omitted, then all
+# release tags will be compiled and deployed. If present, it can be used to
+# filter out release tags that are not desired (usually because they are
+# redundant or are missing dependencies).
+#
+export MAVEN_PACKAGE="forgerock-build-tools"
+export BINTRAY_PACKAGE="wrensec-build-tools"
+export JFROG_PACKAGE="org/forgerock/forgerock-build-tools/"
+
+package_accept_release_tag() {
+  local tag_name="${1}"
+  
+  if [ "${tag_name}" == "1.0.2-1" ]; then
+    echo "Skipping 1.0.2-1 since org.forgerock:forgerock-parent:pom:2.0.15 is missing."
+    return -1
+  else
+    return 0
+  fi
+}
