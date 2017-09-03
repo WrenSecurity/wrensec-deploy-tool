@@ -161,7 +161,7 @@ deploy_all_releases() {
 
 deploy_current_release() {
   echo "Deploying current release"
-  deploy_current_package_version
+  package_deploy_current_version
 }
 
 delete_all_releases() {

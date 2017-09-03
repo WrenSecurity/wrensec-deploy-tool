@@ -34,6 +34,10 @@ package_compile_all_versions() {
   done
 }
 
+package_compile_current_version() {
+  mvn clean install "-Duser.name=Kortanul" -Dignore-artifact-sigs
+}
+
 package_deploy_all_versions() {
   local maven_package="${1}"
   
@@ -45,10 +49,6 @@ package_deploy_all_versions() {
       deploy_current_package_version
     fi
   done
-}
-
-package_compile_current_version() {
-  mvn clean install "-Duser.name=Kortanul" -Dignore-artifact-sigs
 }
 
 package_deploy_current_version() {
