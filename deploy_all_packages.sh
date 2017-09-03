@@ -8,7 +8,7 @@ set -u
 ################################################################################
 SCRIPT_PATH=$(dirname "${BASH_SOURCE[0]}")
 
-source "${SCRIPT_PATH}/includes/shell_funcs.sh"
+source "${SCRIPT_PATH}/includes/all_includes.sh"
 
 ################################################################################
 # Main Script
@@ -41,36 +41,8 @@ done;
 
 set -e
 
-cd ./wrensec-build-tools
-../wrensec-deploy-tool/wren-deploy.sh deploy-all-releases $@
-cd ..
-
-cd ./wrensec-parent
-../wrensec-deploy-tool/wren-deploy.sh deploy-all-releases $@
-cd ..
-
-cd ./wrensec-bom
-../wrensec-deploy-tool/wren-deploy.sh deploy-all-releases $@
-cd ..
-
-cd ./wrensec-util
-../wrensec-deploy-tool/wren-deploy.sh deploy-all-releases $@
-cd ..
-
-cd ./wrensec-i18n-framework
-../wrensec-deploy-tool/wren-deploy.sh deploy-all-releases $@
-cd ..
-
-cd ./wrensec-guice
-../wrensec-deploy-tool/wren-deploy.sh deploy-all-releases $@
-cd ..
-
-cd ./wrensec-http-framework
-../wrensec-deploy-tool/wren-deploy.sh deploy-all-releases $@
-cd ..
-
-cd ./wrensec-rest
-../wrensec-deploy-tool/wren-deploy.sh deploy-all-releases $@
-cd ..
-
-
+for project in ${PROJECTS[*]}; do
+  cd "./${project}"
+  ../wrensec-deploy-tool/wren-deploy.sh deploy-all-releases $@
+  cd ..
+done
