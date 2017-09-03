@@ -64,10 +64,23 @@ git_bulk_cherry_pick() {
   git checkout "${revision_at_start}"
 }
 
+git_get_sorted_tag_list() {
+  git tag | sort -V
+}
+
 git_list_release_tags() {
   # FR sometimes called the release tags something like "forgerock-parent-1.1.0"
   # instead of just "1.1.0"
   exclude_prefix="${1}"
 
   git tag | sed "s/${exclude_prefix}-//" | sort -V
+}
+
+git_branch_exists() {
+  local branch_name="${1}"
+
+  branch_count=$(git branch --list "${branch_name}" | wc | awk '{ print $1 }')
+
+  [ "${branch_count}" -ne 0 ]
+  return $?
 }

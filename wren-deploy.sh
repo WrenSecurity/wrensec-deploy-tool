@@ -30,6 +30,8 @@ parse_args() {
     return 1;
   else
     local commands_allowed=(\
+      "create-sustaining-branches" \
+      "delete-sustaining-branches" \
       "patch-all-releases" \
       "compile-all-releases" \
       "compile-current-release" \
@@ -66,6 +68,14 @@ function print_usage() {
   echo_error "Usage: ${script_name} <COMMAND> [--with-provider=PROVIDER]"
   echo_error ""
   echo_error "Where COMMAND can be any of the following:"
+  echo_error "  - create-sustaining-branches"
+  echo_error "    Creates 'sustaining/X.Y.Z' branches in the current package "
+  echo_error "    from all release tags in the package."
+  echo_error ""
+  echo_error "  - delete-sustaining-branches"
+  echo_error "    Deletes all 'sustaining/X.Y.Z' branches from the current "
+  echo_error "    package."
+  echo_error ""
   echo_error "  - patch-all-releases [SRC-REF] [STARTING-RELEASE-TAG]"
   echo_error "    Cherry-picks either HEAD or SRC-REF on to all release"
   echo_error "    branches, optionally targeting only the release identified by"
@@ -118,9 +128,18 @@ prepare_subcommand_args() {
     fi
   done
 }
+
 ################################################################################
 # Commands
 ################################################################################
+create_sustaining_branches() {
+  package_create_all_sustaining_branches
+}
+
+delete-sustaining-branches() {
+  package_delete_all_sustaining_branches
+}
+
 patch_all_releases() {
   local src_ref="${1:-HEAD}"
   local first_dst_ref="${2:-UNSET}"

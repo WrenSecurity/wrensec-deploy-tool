@@ -1,6 +1,28 @@
 ################################################################################
 # Shared Package Management Functions
 ################################################################################
+package_create_all_sustaining_branches() {
+  for tag in $(git_get_sorted_tag_list); do
+    branch_name=$(\
+      echo $tag | \
+      sed "s/${MAVEN_PACKAGE}-//" | \
+      sed 's/^/sustaining\//'\
+    )
+
+    if git_branch_exists "${branch_name}"; then
+      echo "Sustaining branch ${branch_name} already exists; skipping."
+    else
+      git branch "${branch_name}" "${tag}"
+    fi
+  done
+}
+
+package_delete_all_sustaining_branches() {
+  for branch in $(git branch --list | grep "sustaining"); do
+    git branch -D "${branch}"
+  done
+}
+
 package_compile_all_versions() {
   local maven_package="${1}"
 
