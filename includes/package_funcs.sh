@@ -44,9 +44,9 @@ package_deploy_all_versions() {
   package_prompt_for_gpg_credentials
 
   for tag in $(git_list_release_tags "${maven_package}"); do
-    if accept_release_tag "${tag}"; then
+    if package_accept_release_tag "${tag}"; then
       git checkout "sustaining/${tag}"
-      deploy_current_package_version
+      package_deploy_current_version
     fi
   done
 }
