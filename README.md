@@ -46,6 +46,6 @@ Where `COMMAND` can be any of the following:
 In addition, a `.wren-deploy.rc` file must exist in the current working
 directory in order for it to be deployable. At a minimum this file must export
 the variables `BINTRAY_PACKAGE`, `JFROG_PACKAGE`, and `MAVEN_PACKAGE`, but it
-can also define the function 'package_accept_release_tag()' in order to control 
+can also define the function `package_accept_release_tag()` in order to control 
 which release tags are processed. If the function is not defined, by default all
 release tags are processed.
