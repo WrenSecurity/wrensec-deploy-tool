@@ -138,10 +138,10 @@ delete-sustaining-branches() {
 
 patch_all_releases() {
   local src_ref="${1:-HEAD}"
-  local first_dst_ref="${2:-UNSET}"
+  local first_dst_rel_tag="${2:-UNSET}"
 
   echo "Patching all releases"
-  git_bulk_cherry_pick "${src_ref}" "${first_dst_ref}"
+  git_bulk_cherry_pick "${src_ref}" "${first_dst_rel_tag}"
 }
 
 compile_all_releases() {

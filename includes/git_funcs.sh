@@ -17,21 +17,21 @@ git_ref_to_rev() {
 
 git_bulk_cherry_pick() {
   local src_ref="${1:-HEAD}"
-  local first_dst_ref="${2:-UNSET}"
+  local first_dst_rel_tag="${2:-UNSET}"
 
   revision_at_start=$(git symbolic-ref HEAD | sed "s/refs\/heads\///")
 
   git_ref_to_rev "${src_ref}"
 
-  if [ "${first_dst_ref}" != "UNSET" ]; then
-    starting_target_rev=$(git rev-parse "${starting_ref}")
+  if [ "${first_dst_rel_tag}" != "UNSET" ]; then
+    starting_target_rev=$(git rev-parse "sustaining/${first_dst_rel_tag}")
     cherry_picking_started=0
   else
     starting_target_rev="UNSET"
     cherry_picking_started=1
   fi
 
-  for tag in $(git tag | sed "s/${MAVEN_PACKAGE}-//" | sort -V); do
+  for tag in $(git_list_release_tags "${MAVEN_PACKAGE}"); do
     git checkout "sustaining/${tag}" >/dev/null
 
     current_revision=$(git rev-parse HEAD)
