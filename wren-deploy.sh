@@ -3,8 +3,9 @@
 ################################################################################
 # Wren Deployment Tool
 # ====================
-# Provides the ability to quickly compile and sign multiple versions of
-# packages, then deploy them to BinTray or JFrog.
+# A swiss-army command-line tool for managing, compiling, and publishing
+# multiple versions of a Maven package and then deploying them to BinTray or
+# JFrog.
 #
 # @author Kortanul (kortanul@protonmail.com)
 #
@@ -62,8 +63,9 @@ parse_args() {
 function print_usage() {
   script_name=`basename "${0}"`
 
-  echo_error "Wren Deploy -- Used to quickly compile and sign multiple versions"
-  echo_error "of a package and then deploy them to BinTray or JFrog."
+  echo_error "Wren Deploy -- A swiss-army command-line tool for managing, "
+  echo_error "compiling, and publishing multiple versions of a Maven package "
+  echo_error "and then deploying them to BinTray or JFrog."
   echo_error ""
   echo_error "Usage: ${script_name} <COMMAND> [--with-provider=PROVIDER]"
   echo_error ""
