@@ -95,44 +95,17 @@ package_load_config() {
   fi
 }
 
-package_prompt_for_bintray_credentials() {
-  if [ "${BINTRAY_USERNAME:-UNSET}" == "UNSET" ]; then
-    read -p "BinTray username: " BINTRAY_USERNAME
-  fi
+parse_provider_arg() {
+  for argument; do
+    if [[ "${argument}" == '--with-provider=bintray' ]]; then
+      export provider="bintray"
+    elif [[ "${argument}" == '--with-provider=jfrog' ]]; then
+      export provider="jfrog"
+    fi
+  done
 
-  if [ "${BINTRAY_PASSWORD:-UNSET}" == "UNSET" ]; then
-    read -s -p "JFrog password: " BINTRAY_PASSWORD
-  fi
-
-  export BINTRAY_USERNAME
-  export BINTRAY_PASSWORD
-}
-
-package_prompt_for_jfrog_credentials() {
-  if [ "${JFROG_USERNAME:-UNSET}" == "UNSET" ]; then
-    read -p "JFrog username: " JFROG_USERNAME
-  fi
-
-  if [ "${JFROG_PASSWORD:-UNSET}" == "UNSET" ]; then
-    read -s -p "JFrog password: " JFROG_PASSWORD
-  fi
-
-  export JFROG_USERNAME
-  export JFROG_PASSWORD
-}
-
-package_prompt_for_gpg_credentials() {
-  if [ "${GPG_KEY_ID:-UNSET}" == "UNSET" ]; then
-    read -p "Enter GPG key ID: " GPG_KEY_ID
-  fi
-
-  if [ "${GPG_PASSPHRASE:-UNSET}" == "UNSET" ]; then
-    read -s -p "Enter GPG passphrase: " GPG_PASSPHRASE
-    echo
-  fi
-
-  export GPG_KEY_ID
-  export GPG_PASSPHRASE
+  # Default
+  export provider="${provider:-jfrog}"
 }
 
 ################################################################################

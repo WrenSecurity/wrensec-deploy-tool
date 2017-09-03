@@ -44,16 +44,8 @@ parse_args() {
     if ! array_contains "${command}" ${commands_allowed[*]}; then
       return 1
     else
-      local with_provider="${2:-UNSET}"
-
-      if [[ "${with_provider}" == '--with-provider=bintray' ]]; then
-        export provider="bintray"
-      elif [[ "${with_provider}" == '--with-provider=jfrog' ]]; then
-        export provider="jfrog"
-      else
-        # Default
-        export provider="jfrog"
-      fi
+      shift
+      parse_provider_arg $@
 
       return 0
     fi
