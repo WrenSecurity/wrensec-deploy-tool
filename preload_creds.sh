@@ -30,7 +30,7 @@ source "${SCRIPT_PATH}/includes/all_includes.sh"
 ################################################################################
 # Main Script
 ################################################################################
-parse_provider_arg
+parse_provider_arg $@
 
 if [ "${provider}" == "jfrog" ]; then
   package_prompt_for_jfrog_credentials
@@ -38,7 +38,7 @@ elif [ "${provider}" == "bintray" ]; then
   package_prompt_for_bintray_credentials
 else
   echo_error "Unknown provider: ${provider}"
-  exit
+  exit -1
 fi
 
 package_prompt_for_gpg_credentials

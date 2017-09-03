@@ -13,3 +13,4 @@ export PROJECTS=( \
 )
 
 export WRENDEPLOY_RC=".wren-deploy.rc"
+export DEFAULT_PACKAGE_PROVIDER="jfrog"

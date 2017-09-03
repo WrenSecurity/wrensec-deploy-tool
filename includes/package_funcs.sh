@@ -96,16 +96,18 @@ package_load_config() {
 }
 
 parse_provider_arg() {
+  # Default
+  provider="${DEFAULT_PACKAGE_PROVIDER}"
+
   for argument; do
     if [[ "${argument}" == '--with-provider=bintray' ]]; then
-      export provider="bintray"
+      provider="bintray"
     elif [[ "${argument}" == '--with-provider=jfrog' ]]; then
-      export provider="jfrog"
+      provider="jfrog"
     fi
   done
 
-  # Default
-  export provider="${provider:-jfrog}"
+  export provider
 }
 
 ################################################################################
