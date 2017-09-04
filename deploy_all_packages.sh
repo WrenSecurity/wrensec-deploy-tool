@@ -50,7 +50,7 @@ done
 
 set -e
 
-for project in ${PROJECTS[*]}; do
+for project in ${PROJECTS[@]}; do
   echo "======================================================================="
   echo "Deploying ${project}"
   echo "======================================================================="

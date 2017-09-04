@@ -20,7 +20,7 @@ fi
 
 rm -rf ~/.m2/repository
 
-for project in ${PROJECTS[*]}; do
+for project in ${PROJECTS[@]}; do
   echo "======================================================================="
   echo "Deleting ${project}"
   echo "======================================================================="

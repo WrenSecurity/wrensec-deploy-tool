@@ -41,7 +41,7 @@ parse_args() {
       "delete-all-releases" \
     )
 
-    if ! array_contains "${command}" ${commands_allowed[*]}; then
+    if ! array_contains "${command}" ${commands_allowed[@]}; then
       return 1
     else
       shift
@@ -188,5 +188,5 @@ else
 
   prepare_subcommand_args $@
 
-  eval "${func_name}" ${args[*]}
+  eval "${func_name}" ${args[@]:-}
 fi
