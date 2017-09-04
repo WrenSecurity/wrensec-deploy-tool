@@ -88,9 +88,16 @@ package_verify_keys_for_current_version() {
   #    "-DpgpVerifyPluginVersion=1.2.0-SNAPSHOT"
 
   mvn com.github.s4u.plugins:pgpverify-maven-plugin:1.2.0-SNAPSHOT:check \
+    "-Dpgpverify.keysMapLocation=${WREN_DEP_KEY_WHITELIST}" \
     "-Dignore-artifact-sigs"
 }
 
+package_report_unapproved_sigs_for_current_version() {
+  package_verify_keys_for_current_version | \
+    grep "\[ERROR\] Not allowed artifact" -A 1 | \
+    grep "0x" | \
+    sed -r 's/^\s+//'
+}
 package_sign_3p_artifacts_for_current_version() {
   local target_artifact_ids=( $(package_get_all_unsigned_3p_artifacts) )
 

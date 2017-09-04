@@ -40,6 +40,11 @@ Where `COMMAND` can be any of the following:
     Verifies the GPG signatures of all dependences for whatever version of the 
     current package is checked out.
 
+  - `list-unapproved-artifact-sigs`  
+    Lists the name and GPG signature of each artifact dependency that is not on
+    the Wren whitelist. The whitelist is located at
+    http://wrensecurity.org/trustedkeys.properties.
+
   - `sign-3p-artifacts`  
     Generates GPG signatures for all unsigned third-party artifacts using the 
     Wren Security third-party key, then deploys the artifacts to a provider.

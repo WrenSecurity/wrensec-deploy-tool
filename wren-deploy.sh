@@ -40,6 +40,7 @@ parse_args() {
       "deploy-current-release" \
       "verify-all-releases" \
       "verify-current-release" \
+      "list-unapproved-artifact-sigs" \
       "sign-3p-artifacts" \
       "sign-tools-jar" \
       "delete-all-releases" \
@@ -101,8 +102,13 @@ function print_usage() {
   echo_error "    and verifies the GPG signatures of all dependencies"
   echo_error ""
   echo_error "  - verify-current-release"
-  echo_error "    Verifies the GPG signatures of all dependences for whatever"
+  echo_error "    Verifies the GPG signatures of all dependencies for whatever"
   echo_error "    version of the current package is checked out."
+  echo_error ""
+  echo_error "  - list-unapproved-artifact-sigs"
+  echo_error "    Lists the name and GPG signature of each artifact dependency"
+  echo_error "    that is not on the Wren whitelist. The whitelist is located"
+  echo_error "    at '${WREN_DEP_KEY_WHITELIST}'."
   echo_error ""
   echo_error "  - sign-3p-artifacts"
   echo_error "    Generates GPG signatures for all unsigned third-party"
@@ -196,6 +202,13 @@ verify_all_releases() {
 verify_current_release() {
   echo "Verifying PGP keys for all dependencies of current release"
   package_verify_keys_for_current_version
+}
+
+list_unapproved_artifact_sigs() {
+  echo "Listing all dependencies with signatures not on the whitelist"
+  echo
+
+  package_report_unapproved_sigs_for_current_version
 }
 
 sign_3p_artifacts() {
