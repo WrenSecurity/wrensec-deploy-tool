@@ -96,7 +96,9 @@ package_report_unapproved_sigs_for_current_version() {
   package_verify_keys_for_current_version | \
     grep "\[ERROR\] Not allowed artifact" -A 1 | \
     grep "0x" | \
-    sed -r 's/^\s+//'
+    sed -r 's/^\s+//' |
+    sort |
+    uniq
 }
 package_sign_3p_artifacts_for_current_version() {
   local target_artifact_ids=( $(package_get_all_unsigned_3p_artifacts) )
