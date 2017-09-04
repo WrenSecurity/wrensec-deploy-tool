@@ -11,6 +11,7 @@ source "${INCLUDE_PATH}/shell_funcs.sh"
 # The rest are in alphabetical order
 source "${INCLUDE_PATH}/creds_funcs.sh"
 source "${INCLUDE_PATH}/git_funcs.sh"
+source "${INCLUDE_PATH}/java_funcs.sh"
 source "${INCLUDE_PATH}/package_funcs.sh"
 
 

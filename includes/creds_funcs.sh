@@ -29,6 +29,9 @@ creds_prompt_for_jfrog_credentials() {
   else
     echo "JFrog password is already set; not prompting."
   fi
+
+  export JFROG_USERNAME
+  export JFROG_PASSWORD
 }
 
 creds_prompt_for_gpg_credentials() {

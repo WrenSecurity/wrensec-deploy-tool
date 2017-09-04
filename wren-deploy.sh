@@ -41,6 +41,7 @@ parse_args() {
       "verify-all-releases" \
       "verify-current-release" \
       "sign-3p-artifacts" \
+      "sign-tools-jar" \
       "delete-all-releases" \
     )
 
@@ -107,6 +108,12 @@ function print_usage() {
   echo_error "    Generates GPG signatures for all unsigned third-party"
   echo_error "    artifacts using the Wren Security third-party key, then"
   echo_error "    deploys the artifacts to a provider."
+  echo_error ""
+  echo_error "  - sign-tools-jar"
+  echo_error "    Generates a GPG signature for the version of the JDK "
+  echo_error "    'tools.jar' currently in use on the local machine using the "
+  echo_error "    Wren Security third-party key, then deploys the artifact "
+  echo_error "    signature (not the JAR itself) to a provider."
   echo_error ""
   echo_error "  - delete-all-releases"
   echo_error "    Deletes all versions of the current package from a remote"
@@ -196,11 +203,16 @@ sign_3p_artifacts() {
   package_sign_3p_artifacts_for_current_version
 }
 
+sign_tools_jar() {
+  echo "Signing JDK 'tools.jar' and deploying signature to '${provider}'"
+  package_sign_tools_jar
+}
+
 delete_all_releases() {
   echo "Deleting all releases from '${provider}'"
 
   if [ "${provider}" == "jfrog" ]; then
-    package_delete_from_jfrog "${MAVEN_PACKAGE}" "${JFROG_PACKAGE}"
+    package_delete_from_jfrog "${JFROG_PACKAGE}"
   elif [ "${provider}" == "bintray" ]; then
     package_delete_from_bintray "${MAVEN_PACKAGE}" "${BINTRAY_PACKAGE}"
   else

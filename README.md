@@ -6,47 +6,48 @@ Usage: `wren-deploy.sh <COMMAND> [--with-provider=PROVIDER]`
 
 Where `COMMAND` can be any of the following:
   - `create-sustaining-branches`  
-    Creates `sustaining/X.Y.Z` branches in the current package
-    from all release tags in the package.
+    Creates `sustaining/X.Y.Z` branches in the current package from all release
+    tags in the package.
 
   - `delete-sustaining-branches`  
-    Deletes all `sustaining/X.Y.Z` branches from the current
-    package.
+    Deletes all `sustaining/X.Y.Z` branches from the current package.
 
   - `patch-all-releases [SRC-REF] [STARTING-RELEASE-TAG]`  
-    Cherry-picks either `HEAD` or `SRC-REF` on to all release
-    branches, optionally targeting only the release identified by
-    the specified `STARTING-RELEASE-TAG` and later releases
-    (typically to resume a cherry pick after fixing conflicts).
+    Cherry-picks either `HEAD` or `SRC-REF` on to all release branches, 
+    optionally targeting only the release identified by the specified 
+    `STARTING-RELEASE-TAG` and later releases (typically to resume a cherry pick 
+    after fixing conflicts).
 
   - `compile-all-releases`  
-    Sequentially checks out each release of the current package
-    and compiles it.
+    Sequentially checks out each release of the current package and compiles it.
 
   - `compile-current-release`  
-    Compiles whatever version of the current package is checked
-    out.
+    Compiles whatever version of the current package is checked out.
 
   - `deploy-all-releases`  
-    Sequentially checks out each release of the current package,
-    compiles it, signs it, and then deploys it to a provider.
+    Sequentially checks out each release of the current package, compiles it, 
+    signs it, and then deploys it to a provider.
 
   - `deploy-current-release`  
-    Compiles whatever version of the current package is checked
-    out, then signs it and deploys it to a provider.
+    Compiles whatever version of the current package is checked out, then signs 
+    it and deploys it to a provider.
 
   - `verify-all-releases`  
-    Sequentially checks out each release of the current package
-    and verifies the GPG signatures of all dependencies
+    Sequentially checks out each release of the current package and verifies the 
+    GPG signatures of all dependencies
 
   - `verify-current-release`  
-    Verifies the GPG signatures of all dependences for whatever
-    version of the current package is checked out.
+    Verifies the GPG signatures of all dependences for whatever version of the 
+    current package is checked out.
 
   - `sign-3p-artifacts`  
-    Generates GPG signatures for all unsigned third-party
-    artifacts using the Wren Security third-party key, then
-    deploys the artifacts to a provider.    
+    Generates GPG signatures for all unsigned third-party artifacts using the 
+    Wren Security third-party key, then deploys the artifacts to a provider.
+
+  - `sign-tools-jar`  
+    Generates a GPG signature for the version of the JDK `tools.jar` currently 
+    in use on the local machine using the Wren Security third-party key, then 
+    deploys the artifact signature (not the JAR itself) to a provider.
 
   - `delete-all-releases`  
     Deletes all versions of the current package from a remote

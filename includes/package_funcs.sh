@@ -229,6 +229,34 @@ package_get_all_unsigned_3p_artifacts() {
   sort
 }
 
+package_sign_tools_jar() {
+  local tmpdir=$(mktemp -d '/tmp/wren-deploy.XXXXXXXXXX')
+
+  local java_version=$(java_get_version)
+  local tools_jar_path=$(java_get_jdk_tools_path)
+  local tools_jar_deploy_path="${THIRD_PARTY_SIGNED_PATH}/com/sun/tools/${java_version}/tools-${java_version}.jar"
+  local tools_jar_tmp_path="${tmpdir}/tools.jar"
+
+  local passphrase_var="${WREN_THIRD_PARTY_SIGN_KEY_ID}_PASSPHRASE"
+
+  cp "${tools_jar_path}" "${tools_jar_tmp_path}"
+
+  mvn gpg:sign-and-deploy-file \
+    "-DrepositoryId=${THIRD_PARTY_SIGNED_REPO_ID}" \
+    "-Durl=${THIRD_PARTY_RELEASES_URL}" \
+    "-Dfile=${tools_jar_tmp_path}" \
+    "-DgroupId=com.sun" \
+    "-DartifactId=tools" \
+    "-Dversion=${java_version}" \
+    "-Dgpg.keyname=${WREN_THIRD_PARTY_SIGN_KEY_ID}" \
+    "-Dgpg.passphrase=${!passphrase_var}"
+
+  rm -rf "${tmpdir}"
+
+  # Per Oracle licensing, we CANNOT actually publish the JAR file itself.
+  package_delete_file_from_jfrog "${tools_jar_deploy_path}"
+}
+
 package_delete_from_bintray() {
   local maven_package="${1}"
   local bintray_package="${2}"
@@ -238,20 +266,25 @@ package_delete_from_bintray() {
   for tag in $(git_list_release_tags "${maven_package}"); do
     set -x
     curl -X "DELETE" -u "${BINTRAY_USERNAME}:${BINTRAY_PASSWORD}" \
-      "https://api.bintray.com/packages/wrensecurity/releases/${bintray_package}/versions/${tag}"
+      "${BINTRAY_PROVIDER_BASE_URL}/${bintray_package}/versions/${tag}"
     set +x
   done
 }
 
 package_delete_from_jfrog() {
-  local maven_package="${1}"
-  local jfrog_package="${2}"
-  
+  local jfrog_package="${1}"
+
+  package_delete_file_from_jfrog "releases-local/${jfrog_package}"
+}
+
+package_delete_file_from_jfrog() {
+  local file_path="${1}"
+
   creds_prompt_for_jfrog_credentials
-  
+
   set -x
   curl -X "DELETE" -u "${JFROG_USERNAME}:${JFROG_PASSWORD}" \
-    "https://wrensecurity.jfrog.io/wrensecurity/releases-local/${jfrog_package}"
+    "${JFROG_PROVIDER_BASE_URL}/${file_path}"
   set +x
 }
 
