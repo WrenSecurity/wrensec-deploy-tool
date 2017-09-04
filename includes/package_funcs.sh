@@ -41,7 +41,7 @@ package_compile_current_version() {
 package_deploy_all_versions() {
   local maven_package="${1}"
   
-  package_prompt_for_gpg_credentials
+  creds_prompt_for_gpg_credentials
 
   for tag in $(git_list_release_tags "${maven_package}"); do
     if package_accept_release_tag "${tag}"; then
@@ -52,7 +52,7 @@ package_deploy_all_versions() {
 }
 
 package_deploy_current_version() {
-  package_prompt_for_gpg_credentials
+  creds_prompt_for_gpg_credentials
 
   mvn clean deploy -Psign,forgerock-release \
     "-Dgpg.passphrase=${GPG_PASSPHRASE}" "-Dgpg.keyname=${GPG_KEY_ID}" \
@@ -63,7 +63,7 @@ package_delete_from_bintray() {
   local maven_package="${1}"
   local bintray_package="${2}"
 
-  package_prompt_for_bintray_credentials
+  creds_prompt_for_bintray_credentials
 
   for tag in $(git_list_release_tags "${maven_package}"); do
     set -x
@@ -77,7 +77,7 @@ package_delete_from_jfrog() {
   local maven_package="${1}"
   local jfrog_package="${2}"
   
-  package_prompt_for_jfrog_credentials
+  creds_prompt_for_jfrog_credentials
   
   set -x
   curl -X "DELETE" -u "${JFROG_USERNAME}:${JFROG_PASSWORD}" \

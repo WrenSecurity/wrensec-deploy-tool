@@ -1,7 +1,7 @@
 ################################################################################
 # Credential Management Functions
 ################################################################################
-package_prompt_for_bintray_credentials() {
+creds_prompt_for_bintray_credentials() {
   if [ "${BINTRAY_USERNAME:-UNSET}" == "UNSET" ]; then
     read -p "BinTray username: " BINTRAY_USERNAME
   else
@@ -19,7 +19,7 @@ package_prompt_for_bintray_credentials() {
   export BINTRAY_PASSWORD
 }
 
-package_prompt_for_jfrog_credentials() {
+creds_prompt_for_jfrog_credentials() {
   if [ "${JFROG_USERNAME:-UNSET}" == "UNSET" ]; then
     read -p "JFrog username: " JFROG_USERNAME
   else
@@ -37,7 +37,7 @@ package_prompt_for_jfrog_credentials() {
   export JFROG_PASSWORD
 }
 
-package_prompt_for_gpg_credentials() {
+creds_prompt_for_gpg_credentials() {
   if [ "${GPG_KEY_ID:-UNSET}" == "UNSET" ]; then
     read -p "Enter GPG key ID: " GPG_KEY_ID
   else
