@@ -183,6 +183,7 @@ package_sign_and_deploy_files() {
         local base_name=$(basename "${full_file_path}")
         local tmp_file_path="${tmpdir}/${base_name}"
 
+        # Copy to temp path because you cannot deploy out of the local M2 repo
         cp "${full_file_path}" "${tmp_file_path}"
 
         if [ "${classifier}" == 'pom' ]; then
@@ -201,6 +202,9 @@ package_sign_and_deploy_files() {
     done
 
     for deploy_file in "${deploy_files[@]}"; do
+      # `generatePom` is TRUE just in case we did not encounter a POM.
+      # Per docs, it should not actually get generated unless `pomFile` is
+      # blank.
       mvn gpg:sign-and-deploy-file \
         "-DrepositoryId=${THIRD_PARTY_SIGNED_REPO_ID}" \
         "-Durl=${THIRD_PARTY_RELEASES_URL}" \
