@@ -29,3 +29,11 @@ array_contains() {
 
   return ${in_array}
 }
+
+array_join() {
+  local delimiter="${1}"
+  local IFS="${delimiter}";
+
+  shift;
+  echo "$*";
+}

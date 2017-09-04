@@ -19,5 +19,9 @@ export WRENDEPLOY_RC=".wren-deploy.rc"
 
 export DEFAULT_PACKAGE_PROVIDER="jfrog"
 
+export THIRD_PARTY_SIGNED_REPO_ID="wrensecurity-signed-third-party-releases"
+export THIRD_PARTY_RELEASES_URL="https://wrensecurity.jfrog.io/wrensecurity/releases-signed-third-party/"
+
 export WREN_OFFICIAL_SIGN_KEY_ID="C081F89B"
-export WREN_3P_SIGN_KEY_ID="D7F749B5"
+export WREN_THIRD_PARTY_SIGN_KEY_ID="D7F749B5"
+

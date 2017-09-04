@@ -75,42 +75,147 @@ package_verify_keys_for_all_versions() {
 }
 
 package_verify_keys_for_current_version() {
-# TODO: Build this in as a separate parent POM profile
-#
-#  creds_prompt_for_gpg_credentials "${WREN_OFFICIAL_SIGN_KEY_ID}"
-#
-#  mvn verify -Pforgerock-release "-Duser.name=Kortanul" \
-#    "-Dgpg.keyname=${WREN_OFFICIAL_SIGN_KEY_ID}" "-Dgpg.passphrase=${GPG_PASSPHRASE}" \
-#    "-Dpgpverify.failNoSignature=false" \
-#    "-DpgpVerifyPluginVersion=1.2.0-SNAPSHOT"
-#
+  # TODO: Consider building this in as a separate profile in the parent POM
+  # Maven can probably do a better job with this than Bash
+  #
+  #
+  #  creds_prompt_for_gpg_credentials "${WREN_OFFICIAL_SIGN_KEY_ID}"
+  #
+  #  mvn verify -Pforgerock-release "-Duser.name=Kortanul" \
+  #    "-Dgpg.keyname=${WREN_OFFICIAL_SIGN_KEY_ID}" \
+  #    "-Dgpg.passphrase=${GPG_PASSPHRASE}" \
+  #    "-Dpgpverify.failNoSignature=false" \
+  #    "-DpgpVerifyPluginVersion=1.2.0-SNAPSHOT"
+
   mvn com.github.s4u.plugins:pgpverify-maven-plugin:1.2.0-SNAPSHOT:check \
     "-Dignore-artifact-sigs"
 }
 
 package_sign_3p_artifacts_for_current_version() {
-  local passphrase_var="${WREN_3P_SIGN_KEY_ID}_PASSPHRASE"
+  local target_artifact_ids=( $(package_get_all_unsigned_3p_artifacts) )
 
-  creds_prompt_for_gpg_credentials "${WREN_3P_SIGN_KEY_ID}"
+  creds_prompt_for_gpg_credentials "${WREN_THIRD_PARTY_SIGN_KEY_ID}"
 
-  # Converts:
-  #   com.google.collections:google-collections:pom:1.0
+  package_sign_and_deploy_files target_artifact_ids
+}
+
+##
+# Takes in a list of Maven artifact IDs, parses them, signs them, and deploys.
+#
+# Artifact IDs come in in the format:
+#   com.google.collections:google-collections:pom:1.0
+#
+# This is parsed and converted into an index of all files that correspond to
+# a given artifact. Then, all artifacts for the given artifact are signed and
+# deployed to the remote provider.
+#
+# (Apologies in advance for the sheer length of this function. Unfortunately,
+# passing arrays and hashes between functions is extremely difficult in bash.)
+#
+package_sign_and_deploy_files() {
+  # TODO: Consider building this in as a separate profile in the parent POM
+  # Maven can probably do a better job with this than Bash
   #
-  # Into:
-  #   com/google/collections/google-collections/1.0/google-collections-1.0.pom
-  #
-  local target_3p_package_paths=$( \
-    package_get_all_unsigned_3p_artifacts | \
-    awk 'BEGIN { FS=":"; OFS=":" } { gsub(/\./, "/", $1) } { print }' | \
-    sed -r 's/([^:]+):([^:]+):([^:]+):(.*)/\1\/\2\/\4\/\2-\4.\3/'
-  )
+  declare -n file_list=$1
 
-  for path in ${target_3p_package_paths[@]}; do
-    local full_path="${HOME}/.m2/repository/${path}"
+  declare -A combined_artifact_ids
+  declare -A artifact_index
 
-    gpg -u "0x${WREN_3P_SIGN_KEY_ID}" --passphrase "${!passphrase_var}" \
-      --armor --detach-sign "${full_path}"
+  local passphrase_var="${WREN_THIRD_PARTY_SIGN_KEY_ID}_PASSPHRASE"
+  local package_regex="^([^:]+):([^:]+):([^:]+):(.+)$"
+  local tmpdir=$(mktemp -d '/tmp/wren-deploy.XXXXXXXXXX')
+
+  # Index all the files, so we can find the POM
+  for file in "${file_list[@]}"; do
+    if [[ $file =~ $package_regex ]]; then
+      local group_id="${BASH_REMATCH[1]}"
+      local artifact_id="${BASH_REMATCH[2]}"
+      local classifier="${BASH_REMATCH[3]}"
+      local version="${BASH_REMATCH[4]}"
+
+      local combined_id="${group_id}:${artifact_id}:${version}"
+      local path="${group_id//\./\/}/${artifact_id}/${version}/${artifact_id}-${version}.${classifier}"
+
+      # We're using a hash to de-dupe the IDs for us
+      combined_artifact_ids["${combined_id}"]=1
+
+      artifact_index["${combined_id}_group_id"]="${group_id}"
+      artifact_index["${combined_id}_artifact_id"]="${artifact_id}"
+      artifact_index["${combined_id}_version"]="${version}"
+
+      artifact_index["${combined_id}_classifiers"]+="${classifier} "
+      artifact_index["${combined_id}_${classifier}_path"]="${path}"
+    fi
   done
+
+  # Now, deploy each artifact
+  for combined_id in "${!combined_artifact_ids[@]}"; do
+    local group_id_key="${combined_id}_group_id"
+    local group_id="${artifact_index[$group_id_key]}"
+
+    local artifact_id_key="${combined_id}_artifact_id"
+    local artifact_id="${artifact_index[$artifact_id_key]}"
+
+    local version_key="${combined_id}_version"
+    local version="${artifact_index[$version_key]}"
+
+    local classifiers_key="${combined_id}_classifiers"
+    local classifier_str="${artifact_index[$classifiers_key]}"
+    local classifiers=()
+
+    for classifier in $(echo "${classifier_str}"); do
+      classifiers+=($classifier)
+    done
+
+    declare -a deploy_classifiers=()
+    declare -a deploy_files=()
+
+    for classifier in "${classifiers[@]}"; do
+      local path_key="${combined_id}_${classifier}_path"
+      local relative_file_path="${artifact_index[$path_key]}"
+      local full_file_path="${HOME}/.m2/repository/${relative_file_path}"
+
+      if [ ! -f "${full_file_path}" ]; then
+        echo_error "Unable to sign '${relative_file_path}' because artifact" \
+                   "was not located in the local Maven repository at" \
+                   "'${full_file_path}'. Skipping..."
+      else
+        local base_name=$(basename "${full_file_path}")
+        local tmp_file_path="${tmpdir}/${base_name}"
+
+        cp "${full_file_path}" "${tmp_file_path}"
+
+        if [ "${classifier}" == 'pom' ]; then
+          local classifier_count="${#classifiers[@]}"
+
+          pomFile="${tmp_file_path}"
+
+          # Special case: The POM is the only file
+          if [ "${classifier_count}" -eq 1 ]; then
+            deploy_files+=($tmp_file_path)
+          fi
+        else
+          deploy_files+=($tmp_file_path)
+        fi
+      fi
+    done
+
+    for deploy_file in "${deploy_files[@]}"; do
+      mvn gpg:sign-and-deploy-file \
+        "-DrepositoryId=${THIRD_PARTY_SIGNED_REPO_ID}" \
+        "-Durl=${THIRD_PARTY_RELEASES_URL}" \
+        "-DgeneratePom=true" \
+        "-DpomFile=${pomFile:-}" \
+        "-Dfile=${deploy_file}" \
+        "-DgroupId=${group_id}" \
+        "-DartifactId=${artifact_id}" \
+        "-Dversion=${version}" \
+        "-Dgpg.keyname=${WREN_THIRD_PARTY_SIGN_KEY_ID}" \
+        "-Dgpg.passphrase=${!passphrase_var}"
+    done
+  done
+
+  rm -rf "${tmpdir}"
 }
 
 package_get_all_unsigned_3p_artifacts() {
