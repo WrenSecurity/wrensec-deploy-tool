@@ -3,7 +3,7 @@
 ################################################################################
 package_create_all_sustaining_branches() {
   for tag in $(git_get_sorted_tag_list); do
-    branch_name=$(\
+    local branch_name=$(\
       echo $tag | \
       sed "s/${MAVEN_PACKAGE}-//" | \
       sed 's/^/sustaining\//'\
@@ -35,13 +35,13 @@ package_compile_all_versions() {
 }
 
 package_compile_current_version() {
-  mvn clean install "-Duser.name=Kortanul" -Dignore-artifact-sigs
+  mvn clean install "-Duser.name=Kortanul"
 }
 
 package_deploy_all_versions() {
   local maven_package="${1}"
   
-  creds_prompt_for_gpg_credentials
+  creds_prompt_for_gpg_credentials "${WREN_OFFICIAL_SIGN_KEY_ID}"
 
   for tag in $(git_list_release_tags "${maven_package}"); do
     if package_accept_release_tag "${tag}"; then
@@ -52,11 +52,72 @@ package_deploy_all_versions() {
 }
 
 package_deploy_current_version() {
-  creds_prompt_for_gpg_credentials
+  local passphrase_var="${WREN_OFFICIAL_SIGN_KEY_ID}_PASSPHRASE"
 
-  mvn clean deploy -Psign,forgerock-release \
-    "-Dgpg.passphrase=${GPG_PASSPHRASE}" "-Dgpg.keyname=${GPG_KEY_ID}" \
-    "-Duser.name=Kortanul" -Dignore-artifact-sigs
+  creds_prompt_for_gpg_credentials "${WREN_OFFICIAL_SIGN_KEY_ID}"
+
+  mvn clean deploy -Psign,forgerock-release "-Duser.name=Kortanul" \
+    "-Dgpg.keyname=${WREN_OFFICIAL_SIGN_KEY_ID}" \
+    "-Dgpg.passphrase=${!passphrase_var}"
+}
+
+package_verify_keys_for_all_versions() {
+  local maven_package="${1}"
+
+  creds_prompt_for_gpg_credentials "${WREN_OFFICIAL_SIGN_KEY_ID}"
+
+  for tag in $(git_list_release_tags "${maven_package}"); do
+    if package_accept_release_tag "${tag}"; then
+      git checkout "sustaining/${tag}"
+      package_verify_keys_for_current_version
+    fi
+  done
+}
+
+package_verify_keys_for_current_version() {
+# TODO: Build this in as a separate parent POM profile
+#
+#  creds_prompt_for_gpg_credentials "${WREN_OFFICIAL_SIGN_KEY_ID}"
+#
+#  mvn verify -Pforgerock-release "-Duser.name=Kortanul" \
+#    "-Dgpg.keyname=${WREN_OFFICIAL_SIGN_KEY_ID}" "-Dgpg.passphrase=${GPG_PASSPHRASE}" \
+#    "-Dpgpverify.failNoSignature=false" \
+#    "-DpgpVerifyPluginVersion=1.2.0-SNAPSHOT"
+#
+  mvn com.github.s4u.plugins:pgpverify-maven-plugin:1.2.0-SNAPSHOT:check \
+    "-Dignore-artifact-sigs"
+}
+
+package_sign_3p_artifacts_for_current_version() {
+  local passphrase_var="${WREN_3P_SIGN_KEY_ID}_PASSPHRASE"
+
+  creds_prompt_for_gpg_credentials "${WREN_3P_SIGN_KEY_ID}"
+
+  # Converts:
+  #   com.google.collections:google-collections:pom:1.0
+  #
+  # Into:
+  #   com/google/collections/google-collections/1.0/google-collections-1.0.pom
+  #
+  local target_3p_package_paths=$( \
+    package_get_all_unsigned_3p_artifacts | \
+    awk 'BEGIN { FS=":"; OFS=":" } { gsub(/\./, "/", $1) } { print }' | \
+    sed -r 's/([^:]+):([^:]+):([^:]+):(.*)/\1\/\2\/\4\/\2-\4.\3/'
+  )
+
+  for path in ${target_3p_package_paths[@]}; do
+    local full_path="${HOME}/.m2/repository/${path}"
+
+    gpg -u "0x${WREN_3P_SIGN_KEY_ID}" --passphrase "${!passphrase_var}" \
+      --armor --detach-sign "${full_path}"
+  done
+}
+
+package_get_all_unsigned_3p_artifacts() {
+  package_verify_keys_for_current_version | \
+  grep "\[WARNING\] No signature for" | \
+  sed -r 's/^\[WARNING\] No signature for (.*)$/\1/' |
+  sort
 }
 
 package_delete_from_bintray() {
@@ -106,8 +167,6 @@ parse_provider_arg() {
       provider="jfrog"
     fi
   done
-
-  export provider
 }
 
 ################################################################################

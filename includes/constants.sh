@@ -16,4 +16,8 @@ export PROJECTS=( \
 )
 
 export WRENDEPLOY_RC=".wren-deploy.rc"
+
 export DEFAULT_PACKAGE_PROVIDER="jfrog"
+
+export WREN_OFFICIAL_SIGN_KEY_ID="C081F89B"
+export WREN_3P_SIGN_KEY_ID="D7F749B5"

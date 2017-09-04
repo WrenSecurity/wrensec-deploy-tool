@@ -38,4 +38,5 @@ else
   exit -1
 fi
 
-creds_prompt_for_gpg_credentials
+creds_prompt_for_gpg_credentials "${WREN_OFFICIAL_SIGN_KEY_ID}"
+creds_prompt_for_gpg_credentials "${WREN_3P_SIGN_KEY_ID}"

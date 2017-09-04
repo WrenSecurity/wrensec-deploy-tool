@@ -35,6 +35,19 @@ Where `COMMAND` can be any of the following:
     Compiles whatever version of the current package is checked
     out, then signs it and deploys it to a provider.
 
+  - `verify-all-releases`  
+    Sequentially checks out each release of the current package
+    and verifies the GPG signatures of all dependencies
+
+  - `verify-current-release`  
+    Verifies the GPG signatures of all dependences for whatever
+    version of the current package is checked out.
+
+  - `sign-3p-artifacts`  
+    Generates GPG signatures for all unsigned third-party
+    artifacts using the Wren Security third-party key, then
+    deploys the artifacts to a provider.    
+
   - `delete-all-releases`  
     Deletes all versions of the current package from a remote
     provider.

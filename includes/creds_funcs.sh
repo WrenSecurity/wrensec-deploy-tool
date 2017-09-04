@@ -14,9 +14,6 @@ creds_prompt_for_bintray_credentials() {
   else
     echo "BinTray password is already set; not prompting."
   fi
-
-  export BINTRAY_USERNAME
-  export BINTRAY_PASSWORD
 }
 
 creds_prompt_for_jfrog_credentials() {
@@ -32,25 +29,21 @@ creds_prompt_for_jfrog_credentials() {
   else
     echo "JFrog password is already set; not prompting."
   fi
-
-  export JFROG_USERNAME
-  export JFROG_PASSWORD
 }
 
 creds_prompt_for_gpg_credentials() {
-  if [ "${GPG_KEY_ID:-UNSET}" == "UNSET" ]; then
-    read -p "Enter GPG key ID: " GPG_KEY_ID
-  else
-    echo "Using GPG Key ID '${GPG_KEY_ID}'."
-  fi
+  key_id="${1}"
+  passphrase_var="${key_id}_PASSPHRASE"
 
-  if [ "${GPG_PASSPHRASE:-UNSET}" == "UNSET" ]; then
-    read -s -p "Enter GPG passphrase: " GPG_PASSPHRASE
+  if [ "${!passphrase_var:-UNSET}" == "UNSET" ]; then
+    read -s -p \
+      "Enter GPG passphrase for GPG Key ID '${key_id}': " "${passphrase_var}"
+
     echo
   else
-    echo "GPG passphrase is already set; not prompting."
+    echo "GPG passphrase for GPG Key ID '${key_id}' is already set; not" \
+      "prompting."
   fi
 
-  export GPG_KEY_ID
-  export GPG_PASSPHRASE
+  export "${passphrase_var}"
 }

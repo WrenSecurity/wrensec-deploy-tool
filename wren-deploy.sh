@@ -38,6 +38,9 @@ parse_args() {
       "compile-current-release" \
       "deploy-all-releases" \
       "deploy-current-release" \
+      "verify-all-releases" \
+      "verify-current-release" \
+      "sign-3p-artifacts" \
       "delete-all-releases" \
     )
 
@@ -77,12 +80,12 @@ function print_usage() {
   echo_error "    (typically to resume a cherry pick after fixing conflicts)."
   echo_error ""
   echo_error "  - compile-all-releases"
-  echo_error "    Sequentially checks out each release of the current package"
-  echo_error "    and compiles it."
+  echo_error "    Sequentially checks out each release of the current package,"
+  echo_error "    compiles it, and installs it to the local Maven repository."
   echo_error ""
   echo_error "  - compile-current-release"
   echo_error "    Compiles whatever version of the current package is checked"
-  echo_error "    out."
+  echo_error "    out, and then installs it to the local Maven repository."
   echo_error ""
   echo_error "  - deploy-all-releases"
   echo_error "    Sequentially checks out each release of the current package,"
@@ -91,6 +94,19 @@ function print_usage() {
   echo_error "  - deploy-current-release"
   echo_error "    Compiles whatever version of the current package is checked"
   echo_error "    out, then signs it and deploys it to a provider."
+  echo_error ""
+  echo_error "  - verify-all-releases"
+  echo_error "    Sequentially checks out each release of the current package"
+  echo_error "    and verifies the GPG signatures of all dependencies"
+  echo_error ""
+  echo_error "  - verify-current-release"
+  echo_error "    Verifies the GPG signatures of all dependences for whatever"
+  echo_error "    version of the current package is checked out."
+  echo_error ""
+  echo_error "  - sign-3p-artifacts"
+  echo_error "    Generates GPG signatures for all unsigned third-party"
+  echo_error "    artifacts using the Wren Security third-party key, then"
+  echo_error "    deploys the artifacts to a provider."
   echo_error ""
   echo_error "  - delete-all-releases"
   echo_error "    Deletes all versions of the current package from a remote"
@@ -120,6 +136,7 @@ prepare_subcommand_args() {
     if [ "${argument:0:2}" != "--" ]; then
       args+=("${argument}")
     fi
+
   done
 }
 
@@ -162,6 +179,21 @@ deploy_all_releases() {
 deploy_current_release() {
   echo "Deploying current release to '${provider}'"
   package_deploy_current_version
+}
+
+verify_all_releases() {
+  echo "Verifying PGP keys for all dependencies of all releases"
+  package_verify_keys_for_all_versions "${MAVEN_PACKAGE}"
+}
+
+verify_current_release() {
+  echo "Verifying PGP keys for all dependencies of current release"
+  package_verify_keys_for_current_version
+}
+
+sign_3p_artifacts() {
+  echo "Signing unsigned third-party artifacts and deploying to '${provider}'"
+  package_sign_3p_artifacts_for_current_version
 }
 
 delete_all_releases() {
