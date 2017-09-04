@@ -110,7 +110,7 @@ function print_usage() {
 }
 
 prepare_subcommand_args() {
-  export args=()
+  args=()
 
   # Skip command arg
   shift
