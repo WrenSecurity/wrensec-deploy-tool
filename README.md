@@ -33,8 +33,8 @@ Where `COMMAND` can be any of the following:
     it and deploys it to a provider.
 
   - `verify-all-releases`  
-    Sequentially checks out each release of the current package and verifies the 
-    GPG signatures of all dependencies
+    Sequentially checks out each release of the current package and verifies the
+    GPG signatures of all its dependencies.
 
   - `verify-current-release`  
     Verifies the GPG signatures of all dependences for whatever version of the 
@@ -55,16 +55,18 @@ Where `COMMAND` can be any of the following:
     deploys the artifact signature (not the JAR itself) to a provider.
 
   - `delete-all-releases`  
-    Deletes all versions of the current package from a remote
-    provider.
+    Deletes all versions of the current package from a remote provider.
 
 `PROVIDER` can be either of the following:
   - `jfrog`
   - `bintray`
 
 In addition, a `.wren-deploy.rc` file must exist in the current working
-directory in order for it to be deployable. At a minimum this file must export
-the variables `BINTRAY_PACKAGE`, `JFROG_PACKAGE`, and `MAVEN_PACKAGE`, but it
-can also define the function `package_accept_release_tag()` in order to control 
-which release tags are processed. If the function is not defined, by default all
-release tags are processed.
+directory in order for the package in the current directory to be deployable. At
+a minimum, the file must export the variables `BINTRAY_PACKAGE`,
+`JFROG_PACKAGE`, and `MAVEN_PACKAGE`. It can optionally export
+`MVN_COMPILE_ARGS` to modify the command line passed to Maven during
+compilation. Finally, it can also define the function
+`package_accept_release_tag()` in order to control which release tags are
+processed; if the function is not defined, all releases are processed, by
+default.

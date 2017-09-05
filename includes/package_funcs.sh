@@ -35,7 +35,9 @@ package_compile_all_versions() {
 }
 
 package_compile_current_version() {
-  mvn clean install "-Duser.name=Kortanul"
+  local compile_args=$(package_get_mvn_compile_args)
+
+  package_invoke_maven clean install ${compile_args}
 }
 
 package_deploy_all_versions() {
@@ -52,11 +54,13 @@ package_deploy_all_versions() {
 }
 
 package_deploy_current_version() {
+  local compile_args=$(package_get_mvn_compile_args)
   local passphrase_var="${WREN_OFFICIAL_SIGN_KEY_ID}_PASSPHRASE"
 
   creds_prompt_for_gpg_credentials "${WREN_OFFICIAL_SIGN_KEY_ID}"
 
-  mvn clean deploy -Psign,forgerock-release "-Duser.name=Kortanul" \
+  package_invoke_maven clean deploy ${compile_args} \
+    "-Psign,forgerock-release" \
     "-Dgpg.keyname=${WREN_OFFICIAL_SIGN_KEY_ID}" \
     "-Dgpg.passphrase=${!passphrase_var}"
 }
@@ -81,13 +85,14 @@ package_verify_keys_for_current_version() {
   #
   #  creds_prompt_for_gpg_credentials "${WREN_OFFICIAL_SIGN_KEY_ID}"
   #
-  #  mvn verify -Pforgerock-release "-Duser.name=Kortanul" \
+  #  package_invoke_maven verify -Pforgerock-release ${compile_args} \
   #    "-Dgpg.keyname=${WREN_OFFICIAL_SIGN_KEY_ID}" \
   #    "-Dgpg.passphrase=${GPG_PASSPHRASE}" \
   #    "-Dpgpverify.failNoSignature=false" \
   #    "-DpgpVerifyPluginVersion=1.2.0-SNAPSHOT"
 
-  mvn com.github.s4u.plugins:pgpverify-maven-plugin:1.2.0-SNAPSHOT:check \
+  package_invoke_maven \
+    com.github.s4u.plugins:pgpverify-maven-plugin:1.2.0-SNAPSHOT:check \
     "-Dpgpverify.keysMapLocation=${WREN_DEP_KEY_WHITELIST}" \
     "-Dignore-artifact-sigs"
 }
@@ -215,7 +220,7 @@ package_sign_and_deploy_artifacts() {
       # `generatePom` is TRUE just in case we did not encounter a POM.
       # Per docs, it should not actually get generated unless `pomFile` is
       # blank.
-      mvn gpg:sign-and-deploy-file \
+      package_invoke_maven gpg:sign-and-deploy-file \
         "-DrepositoryId=${THIRD_PARTY_SIGNED_REPO_ID}" \
         "-Durl=${THIRD_PARTY_RELEASES_URL}" \
         "-DgeneratePom=true" \
@@ -251,7 +256,7 @@ package_sign_tools_jar() {
 
   cp "${tools_jar_path}" "${tools_jar_tmp_path}"
 
-  mvn gpg:sign-and-deploy-file \
+  package_invoke_maven gpg:sign-and-deploy-file \
     "-DrepositoryId=${THIRD_PARTY_SIGNED_REPO_ID}" \
     "-Durl=${THIRD_PARTY_RELEASES_URL}" \
     "-Dfile=${tools_jar_tmp_path}" \
@@ -274,10 +279,8 @@ package_delete_from_bintray() {
   creds_prompt_for_bintray_credentials
 
   for tag in $(git_list_release_tags "${maven_package}"); do
-    set -x
     curl -X "DELETE" -u "${BINTRAY_USERNAME}:${BINTRAY_PASSWORD}" \
       "${BINTRAY_PROVIDER_BASE_URL}/${bintray_package}/versions/${tag}"
-    set +x
   done
 }
 
@@ -292,10 +295,8 @@ package_delete_file_from_jfrog() {
 
   creds_prompt_for_jfrog_credentials
 
-  set -x
   curl -X "DELETE" -u "${JFROG_USERNAME}:${JFROG_PASSWORD}" \
     "${JFROG_PROVIDER_BASE_URL}/${file_path}"
-  set +x
 }
 
 package_load_config() {
@@ -306,6 +307,30 @@ package_load_config() {
   else
     source "${WRENDEPLOY_RC}"
   fi
+}
+
+package_get_mvn_compile_args() {
+  local default_compile_args=${WREN_DEFAULT_MVN_COMPILE_ARGS:-}
+  local compile_args=${MVN_COMPILE_ARGS:-${default_compile_args}}
+
+  echo $compile_args
+}
+
+package_invoke_maven() {
+  local maven_args=( "$@" )
+  local clean_args=()
+
+  for arg in ${maven_args[@]}; do
+    # Exclude passphrase from appearing in the log
+    if [[ "${arg}" =~ ^\-Dgpg\.passphrase=.*$ ]]; then
+      clean_args+=('-Dgpg.passphrase=XXXXXXXXXX')
+    else
+      clean_args+=($arg)
+    fi
+  done
+
+  echo mvn ${clean_args[@]}
+  mvn ${maven_args[@]}
 }
 
 parse_provider_arg() {
