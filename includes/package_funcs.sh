@@ -100,12 +100,13 @@ package_report_unapproved_sigs_for_current_version() {
     sort |
     uniq
 }
+
 package_sign_3p_artifacts_for_current_version() {
   local target_artifact_ids=( $(package_get_all_unsigned_3p_artifacts) )
 
   creds_prompt_for_gpg_credentials "${WREN_THIRD_PARTY_SIGN_KEY_ID}"
 
-  package_sign_and_deploy_files target_artifact_ids
+  package_sign_and_deploy_artifacts target_artifact_ids
 }
 
 ##
@@ -121,7 +122,7 @@ package_sign_3p_artifacts_for_current_version() {
 # (Apologies in advance for the sheer length of this function. Unfortunately,
 # passing arrays and hashes between functions is extremely difficult in bash.)
 #
-package_sign_and_deploy_files() {
+package_sign_and_deploy_artifacts() {
   # TODO: Consider building this in as a separate profile in the parent POM
   # Maven can probably do a better job with this than Bash
   #
