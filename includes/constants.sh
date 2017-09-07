@@ -11,6 +11,7 @@ export PROJECTS=( \
   "wrensec-http-framework" \
   "wrensec-rest" \
   "wrensec-audit" \
+  "wrensec-persistit" \
   "wrends-sdk" \
   "wrends" \
 )
