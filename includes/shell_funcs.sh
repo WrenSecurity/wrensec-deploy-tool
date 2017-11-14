@@ -2,7 +2,7 @@
 # Shared Bash Shell Functions
 ################################################################################
 echo_error() {
-  message="$1";
+  message="$@";
 
   echo "$message" 1>&2;
 }
