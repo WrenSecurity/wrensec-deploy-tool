@@ -176,6 +176,20 @@ package_sign_and_deploy_artifacts() {
     declare -a deploy_classifiers=()
     declare -a deploy_files=()
 
+    # Very special case: POM is signed, but everything else isn't (e.g. xercesImpl:2.9.1).
+    # Go figure that one out...
+    if ! array_contains 'pom' ${classifiers[@]}; then
+      local path_key="${combined_id}_pom_path"
+      local pom_path=""${group_id//\./\/}/${artifact_id}/${version}/${artifact_id}-${version}.pom""
+
+      classifiers+=( 'pom' )
+      artifact_index[$path_key]="${pom_path}"
+
+      echo_error "WARNING: '${artifact_id}:${version}' has a signed POM but unsigned artifacts." \
+                 "This is an unusual situation. The current signature on the POM is going to be" \
+                 "disregarded so that the POM can be signed along with all of its artifacts."
+    fi
+
     for classifier in "${classifiers[@]}"; do
       local path_key="${combined_id}_${classifier}_path"
       local relative_file_path="${artifact_index[$path_key]}"
@@ -230,9 +244,9 @@ package_sign_and_deploy_artifacts() {
 
 package_get_all_unsigned_3p_artifacts() {
   package_verify_keys_for_current_version | \
-  grep "\[WARNING\] No signature for" | \
-  sed -r 's/^\[WARNING\] No signature for (.*)$/\1/' |
-  sort
+    grep "\[WARNING\] No signature for" | \
+    sed -r 's/^\[WARNING\] No signature for (.*)$/\1/' |
+    sort
 }
 
 package_sign_tools_jar() {
