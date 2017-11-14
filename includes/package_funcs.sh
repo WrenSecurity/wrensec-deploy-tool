@@ -82,17 +82,8 @@ package_verify_keys_for_current_version() {
   # TODO: Consider building this in as a separate profile in the parent POM
   # Maven can probably do a better job with this than Bash
   #
-  #
-  #  creds_prompt_for_gpg_credentials "${WREN_OFFICIAL_SIGN_KEY_ID}"
-  #
-  #  package_invoke_maven verify -Pforgerock-release ${compile_args} \
-  #    "-Dgpg.keyname=${WREN_OFFICIAL_SIGN_KEY_ID}" \
-  #    "-Dgpg.passphrase=${GPG_PASSPHRASE}" \
-  #    "-Dpgpverify.failNoSignature=false" \
-  #    "-DpgpVerifyPluginVersion=1.2.0-SNAPSHOT"
-
   package_invoke_maven \
-    com.github.s4u.plugins:pgpverify-maven-plugin:1.2.0-SNAPSHOT:check \
+    com.github.s4u.plugins:pgpverify-maven-plugin:${PGPVERIFY_VERSION}:check \
     "-Dpgpverify.keysMapLocation=${WREN_DEP_KEY_WHITELIST}" \
     "-Dignore-artifact-sigs"
 }

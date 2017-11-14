@@ -32,3 +32,4 @@ export WREN_THIRD_PARTY_SIGN_KEY_ID="D7F749B5"
 
 export WREN_DEP_KEY_WHITELIST="http://wrensecurity.org/trustedkeys.properties"
 
+export PGPVERIFY_VERSION="1.2.0-wren1"
