@@ -19,7 +19,7 @@ if [ ! -d "wrensec-parent" ]; then
 fi
 
 # Don't allow a failure to delete to hold up deployment.
-"${SCRIPT_PATH}/delete_all_deployed_packages.sh" || true
+#"${SCRIPT_PATH}/delete_all_deployed_packages.sh" || true
 
 parent_failed=1
 tools_failed=1
