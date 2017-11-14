@@ -12,8 +12,6 @@ export PROJECTS=( \
   "wrensec-rest" \
   "wrensec-audit" \
   "wrensec-persistit" \
-  "wrends-sdk" \
-  "wrends" \
 )
 
 export WRENDEPLOY_RC=".wren-deploy.rc"
