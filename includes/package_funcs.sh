@@ -284,18 +284,6 @@ package_sign_tools_jar() {
   package_delete_file_from_jfrog "${tools_jar_deploy_path}"
 }
 
-package_delete_from_bintray() {
-  local maven_package="${1}"
-  local bintray_package="${2}"
-
-  creds_prompt_for_bintray_credentials
-
-  for tag in $(git_list_release_tags "${maven_package}"); do
-    curl -X "DELETE" -u "${BINTRAY_USERNAME}:${BINTRAY_PASSWORD}" \
-      "${BINTRAY_PROVIDER_BASE_URL}/${bintray_package}/versions/${tag}"
-  done
-}
-
 package_delete_from_jfrog() {
   local jfrog_package="${1}"
 

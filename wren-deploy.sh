@@ -43,7 +43,6 @@ parse_args() {
       "list-unapproved-artifact-sigs" \
       "sign-3p-artifacts" \
       "sign-tools-jar" \
-      "delete-all-releases" \
     )
 
     if ! array_contains "${command}" ${commands_allowed[@]}; then
@@ -120,10 +119,6 @@ function print_usage() {
   echo_error "    'tools.jar' currently in use on the local machine using the"
   echo_error "    Wren Security third-party key, then deploys the artifact"
   echo_error "    signature (not the JAR itself) to a provider."
-  echo_error ""
-  echo_error "  - delete-all-releases"
-  echo_error "    Deletes all versions of the current package from a remote"
-  echo_error "    provider."
   echo_error ""
   echo_error "PROVIDER can be either of the following:"
   echo_error "  - jfrog"
@@ -221,18 +216,6 @@ sign_3p_artifacts() {
 sign_tools_jar() {
   echo "Signing JDK 'tools.jar' and deploying signature to '${provider}'"
   package_sign_tools_jar
-}
-
-delete_all_releases() {
-  echo "Deleting all releases from '${provider}'"
-
-  if [ "${provider}" == "jfrog" ]; then
-    package_delete_from_jfrog "${JFROG_PACKAGE}"
-  elif [ "${provider}" == "bintray" ]; then
-    package_delete_from_bintray "${MAVEN_PACKAGE}" "${BINTRAY_PACKAGE}"
-  else
-    echo_error "Unknown provider: ${provider}"
-  fi
 }
 
 ################################################################################

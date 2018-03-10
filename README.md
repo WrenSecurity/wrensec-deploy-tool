@@ -54,9 +54,6 @@ Where `COMMAND` can be any of the following:
     in use on the local machine using the Wren Security third-party key, then 
     deploys the artifact signature (not the JAR itself) to a provider.
 
-  - `delete-all-releases`  
-    Deletes all versions of the current package from a remote provider.
-
 `PROVIDER` can be either of the following:
   - `jfrog`
   - `bintray`
