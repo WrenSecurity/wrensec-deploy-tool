@@ -221,16 +221,22 @@ prepare_subcommand_args() {
 # Commands
 ################################################################################
 create_sustaining_branches() {
+  package_load_config
+
   echo "Creating all missing sustaining branches"
   package_create_all_sustaining_branches "${MAVEN_PACKAGE}"
 }
 
 delete-sustaining-branches() {
+  package_load_config
+
   echo "Deleting all existing sustaining branches"
   package_delete_all_sustaining_branches
 }
 
 patch_all_releases() {
+  package_load_config
+
   local src_ref="${1:-HEAD}"
   local first_dst_rel_tag="${2:-UNSET}"
 
@@ -239,36 +245,50 @@ patch_all_releases() {
 }
 
 compile_all_releases() {
+  package_load_config
+
   echo "Compiling all releases"
   package_compile_all_versions
 }
 
 compile_current_release() {
+  package_load_config
+
   echo "Compiling current release"
   package_compile_current_version
 }
 
 deploy_all_releases() {
+  package_load_config
+
   echo "Deploying all releases to JFrog"
   package_deploy_all_versions
 }
 
 deploy_current_release() {
+  package_load_config
+
   echo "Deploying current release to JFrog"
   package_deploy_current_version
 }
 
 verify_all_releases() {
+  package_load_config
+
   echo "Verifying PGP keys for all dependencies of all releases"
   package_verify_keys_for_all_versions
 }
 
 verify_current_release() {
+  package_load_config
+
   echo "Verifying PGP keys for all dependencies of current release"
   package_verify_keys_for_current_version
 }
 
 list_unapproved_artifact_sigs() {
+  package_load_config
+
   echo "Listing all dependencies with signatures not on the whitelist"
   echo
 
@@ -276,6 +296,8 @@ list_unapproved_artifact_sigs() {
 }
 
 capture_unapproved_artifact_sigs() {
+  package_load_config
+
   local wrensec_home_path="${1:-UNSET}"
 
   if [ "${wrensec_home_path}" == "UNSET" ]; then
@@ -334,6 +356,8 @@ deploy_consensus_verified_artifacts() {
 }
 
 sign_3p_artifacts() {
+  package_load_config
+
   echo "Signing unsigned third-party artifacts and deploying to JFrog"
   package_sign_3p_artifacts_for_current_version
 }
@@ -357,8 +381,6 @@ if ! parse_args "$@"; then
   print_usage
   exit 1
 else
-  package_load_config
-
   func_name="${command//-/_}"
 
   declare -a SUBCOMMAND_ARGS
