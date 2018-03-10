@@ -2,7 +2,7 @@
 A swiss-army command-line tool for managing, compiling, and publishing multiple
 versions of a Maven package and then deploying them to BinTray or JFrog.
 
-Usage: `wren-deploy.sh <COMMAND> [--with-provider=PROVIDER]`
+Usage: `wren-deploy.sh <COMMAND>`
 
 Where `COMMAND` can be any of the following:
   - `create-sustaining-branches`  
@@ -26,11 +26,11 @@ Where `COMMAND` can be any of the following:
 
   - `deploy-all-releases`  
     Sequentially checks out each release of the current package, compiles it, 
-    signs it, and then deploys it to a provider.
+    signs it, and then deploys it to JFrog.
 
   - `deploy-current-release`  
     Compiles whatever version of the current package is checked out, then signs 
-    it and deploys it to a provider.
+    it and deploys it to JFrog.
 
   - `verify-all-releases`  
     Sequentially checks out each release of the current package and verifies the
@@ -47,16 +47,12 @@ Where `COMMAND` can be any of the following:
 
   - `sign-3p-artifacts`  
     Generates GPG signatures for all unsigned third-party artifacts using the 
-    Wren Security third-party key, then deploys the artifacts to a provider.
+    Wren Security third-party key, then deploys the artifacts to JFrog.
 
   - `sign-tools-jar`  
     Generates a GPG signature for the version of the JDK `tools.jar` currently 
     in use on the local machine using the Wren Security third-party key, then 
-    deploys the artifact signature (not the JAR itself) to a provider.
-
-`PROVIDER` can be either of the following:
-  - `jfrog`
-  - `bintray`
+    deploys the artifact signature (not the JAR itself) to JFrog.
 
 In addition, a `.wren-deploy.rc` file must exist in the current working
 directory in order for the package in the current directory to be deployable. At

@@ -27,16 +27,8 @@ source "${SCRIPT_PATH}/includes/all_includes.sh"
 ################################################################################
 # Main Script
 ################################################################################
-parse_provider_arg $@
-
-if [ "${provider}" == "jfrog" ]; then
-  creds_prompt_for_jfrog_credentials
-elif [ "${provider}" == "bintray" ]; then
-  creds_prompt_for_bintray_credentials
-else
-  echo_error "Unknown provider: ${provider}"
-  exit -1
-fi
+creds_prompt_for_jfrog_credentials
+creds_prompt_for_bintray_credentials
 
 creds_prompt_for_gpg_credentials "${WREN_OFFICIAL_SIGN_KEY_ID}"
 creds_prompt_for_gpg_credentials "${WREN_THIRD_PARTY_SIGN_KEY_ID}"

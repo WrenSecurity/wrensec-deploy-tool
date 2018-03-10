@@ -336,19 +336,6 @@ package_invoke_maven() {
   mvn ${maven_args[@]}
 }
 
-parse_provider_arg() {
-  # Default
-  provider="${DEFAULT_PACKAGE_PROVIDER}"
-
-  for argument; do
-    if [[ "${argument}" == '--with-provider=bintray' ]]; then
-      provider="bintray"
-    elif [[ "${argument}" == '--with-provider=jfrog' ]]; then
-      provider="jfrog"
-    fi
-  done
-}
-
 ################################################################################
 # Hooks (can be overridden in .rc by being defined)
 ################################################################################

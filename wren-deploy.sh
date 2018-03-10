@@ -49,7 +49,6 @@ parse_args() {
       return 1
     else
       shift
-      parse_provider_arg $@
 
       return 0
     fi
@@ -63,7 +62,7 @@ function print_usage() {
   echo_error "compiling, and publishing multiple versions of a Maven package"
   echo_error "and then deploying them to BinTray or JFrog."
   echo_error ""
-  echo_error "Usage: ${script_name} <COMMAND> [--with-provider=PROVIDER]"
+  echo_error "Usage: ${script_name} <COMMAND>"
   echo_error ""
   echo_error "Where COMMAND can be any of the following:"
   echo_error "  - create-sustaining-branches"
@@ -90,11 +89,11 @@ function print_usage() {
   echo_error ""
   echo_error "  - deploy-all-releases"
   echo_error "    Sequentially checks out each release of the current package,"
-  echo_error "    compiles it, signs it, and then deploys it to a provider."
+  echo_error "    compiles it, signs it, and then deploys it to JFrog."
   echo_error ""
   echo_error "  - deploy-current-release"
   echo_error "    Compiles whatever version of the current package is checked"
-  echo_error "    out, then signs it and deploys it to a provider."
+  echo_error "    out, then signs it and deploys it to JFrog."
   echo_error ""
   echo_error "  - verify-all-releases"
   echo_error "    Sequentially checks out each release of the current package"
@@ -112,17 +111,13 @@ function print_usage() {
   echo_error "  - sign-3p-artifacts"
   echo_error "    Generates GPG signatures for all unsigned third-party"
   echo_error "    artifacts using the Wren Security third-party key, then"
-  echo_error "    deploys the artifacts to a provider."
+  echo_error "    deploys the artifacts to JFrog."
   echo_error ""
   echo_error "  - sign-tools-jar"
   echo_error "    Generates a GPG signature for the version of the JDK"
   echo_error "    'tools.jar' currently in use on the local machine using the"
   echo_error "    Wren Security third-party key, then deploys the artifact"
-  echo_error "    signature (not the JAR itself) to a provider."
-  echo_error ""
-  echo_error "PROVIDER can be either of the following:"
-  echo_error "  - jfrog"
-  echo_error "  - bintray"
+  echo_error "    signature (not the JAR itself) to JFrog."
   echo_error ""
   echo_error "In addition, a '${WRENDEPLOY_RC}' file must exist in the current"
   echo_error "working directory in order for the package in the current"
@@ -182,12 +177,12 @@ compile_current_release() {
 }
 
 deploy_all_releases() {
-  echo "Deploying all releases to '${provider}'"
+  echo "Deploying all releases to JFrog"
   package_deploy_all_versions
 }
 
 deploy_current_release() {
-  echo "Deploying current release to '${provider}'"
+  echo "Deploying current release to JFrog"
   package_deploy_current_version
 }
 
@@ -209,12 +204,12 @@ list_unapproved_artifact_sigs() {
 }
 
 sign_3p_artifacts() {
-  echo "Signing unsigned third-party artifacts and deploying to '${provider}'"
+  echo "Signing unsigned third-party artifacts and deploying to JFrog"
   package_sign_3p_artifacts_for_current_version
 }
 
 sign_tools_jar() {
-  echo "Signing JDK 'tools.jar' and deploying signature to '${provider}'"
+  echo "Signing JDK 'tools.jar' and deploying signature to JFrog"
   package_sign_tools_jar
 }
 

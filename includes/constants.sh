@@ -16,8 +16,6 @@ export PROJECTS=( \
 
 export WRENDEPLOY_RC=".wren-deploy.rc"
 
-export DEFAULT_PACKAGE_PROVIDER="jfrog"
-
 export JFROG_PROVIDER_BASE_URL="https://wrensecurity.jfrog.io/wrensecurity"
 export BINTRAY_PROVIDER_BASE_URL="https://api.bintray.com/packages/wrensecurity/releases"
 
