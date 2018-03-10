@@ -155,7 +155,7 @@ prepare_subcommand_args() {
 ################################################################################
 create_sustaining_branches() {
   echo "Creating all missing sustaining branches"
-  package_create_all_sustaining_branches
+  package_create_all_sustaining_branches "${MAVEN_PACKAGE}"
 }
 
 delete-sustaining-branches() {
@@ -173,7 +173,7 @@ patch_all_releases() {
 
 compile_all_releases() {
   echo "Compiling all releases"
-  package_compile_all_versions "${MAVEN_PACKAGE}"
+  package_compile_all_versions
 }
 
 compile_current_release() {
@@ -183,7 +183,7 @@ compile_current_release() {
 
 deploy_all_releases() {
   echo "Deploying all releases to '${provider}'"
-  package_deploy_all_versions "${MAVEN_PACKAGE}"
+  package_deploy_all_versions
 }
 
 deploy_current_release() {
@@ -193,7 +193,7 @@ deploy_current_release() {
 
 verify_all_releases() {
   echo "Verifying PGP keys for all dependencies of all releases"
-  package_verify_keys_for_all_versions "${MAVEN_PACKAGE}"
+  package_verify_keys_for_all_versions
 }
 
 verify_current_release() {

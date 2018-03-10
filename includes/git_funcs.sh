@@ -31,7 +31,7 @@ git_bulk_cherry_pick() {
     cherry_picking_started=1
   fi
 
-  for tag in $(git_list_release_tags "${MAVEN_PACKAGE}"); do
+  for tag in $(git_list_sustaining_versions); do
     current_branch_name="sustaining/${tag}"
 
     if ! package_accept_release_tag "${tag}"; then
@@ -71,12 +71,16 @@ git_get_sorted_tag_list() {
   git tag | sort -V
 }
 
-git_list_release_tags() {
-  # FR sometimes called the release tags something like "forgerock-parent-1.1.0"
-  # instead of just "1.1.0"
-  exclude_prefix="${1}"
+git_list_sustaining_versions() {
+  git_list_release_branches | sed "s/^sustaining\///"
+}
 
-  git tag | sed "s/${exclude_prefix}-//" | sort -V
+git_list_release_branches() {
+  git_get_branch_list | grep -e "^sustaining/" | sort -V
+}
+
+git_get_branch_list() {
+  git for-each-ref --format '%(refname:short)' refs/heads/
 }
 
 git_branch_exists() {

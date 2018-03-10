@@ -2,10 +2,19 @@
 # Shared Package Management Functions
 ################################################################################
 package_create_all_sustaining_branches() {
-  for tag in $(git_get_sorted_tag_list); do
+  local maven_package="${1}"
+
+  # Ignores tags that have manually been moved over the legacy "forgerock/"
+  # namespace.
+  local version_tags=$(\
+    git_get_sorted_tag_list | \
+      grep --invert-match -e "^forgerock/"\
+  )
+
+  for tag in $(version_tags); do
     local branch_name=$(\
       echo $tag | \
-      sed "s/${MAVEN_PACKAGE}-//" | \
+      sed "s/${maven_package}-//" | \
       sed 's/^/sustaining\//'\
     )
 
@@ -18,15 +27,13 @@ package_create_all_sustaining_branches() {
 }
 
 package_delete_all_sustaining_branches() {
-  for branch in $(git branch --list | grep "sustaining"); do
+  for branch in $(git_list_release_branches); do
     git branch -D "${branch}"
   done
 }
 
 package_compile_all_versions() {
-  local maven_package="${1}"
-
-  for tag in $(git_list_release_tags "${maven_package}"); do
+  for tag in $(git_list_sustaining_versions); do
     if package_accept_release_tag "${tag}"; then
       git checkout "sustaining/${tag}"
       package_compile_current_version
@@ -47,11 +54,9 @@ package_compile_current_version() {
 }
 
 package_deploy_all_versions() {
-  local maven_package="${1}"
-  
   creds_prompt_for_gpg_credentials "${WREN_OFFICIAL_SIGN_KEY_ID}"
 
-  for tag in $(git_list_release_tags "${maven_package}"); do
+  for tag in $(git_list_sustaining_versions); do
     if package_accept_release_tag "${tag}"; then
       git checkout "sustaining/${tag}"
       package_deploy_current_version
@@ -72,11 +77,9 @@ package_deploy_current_version() {
 }
 
 package_verify_keys_for_all_versions() {
-  local maven_package="${1}"
-
   creds_prompt_for_gpg_credentials "${WREN_OFFICIAL_SIGN_KEY_ID}"
 
-  for tag in $(git_list_release_tags "${maven_package}"); do
+  for tag in $(git_list_sustaining_versions); do
     if package_accept_release_tag "${tag}"; then
       git checkout "sustaining/${tag}"
       package_verify_keys_for_current_version
