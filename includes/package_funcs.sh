@@ -180,7 +180,7 @@ package_sign_and_deploy_artifacts() {
     done
 
     declare -a deploy_classifiers=()
-    declare -a deploy_files=()
+    declare -A deploy_files=()
 
     # Very special case: POM is signed, but everything else isn't (e.g. xercesImpl:2.9.1).
     # Go figure that one out...
@@ -213,35 +213,36 @@ package_sign_and_deploy_artifacts() {
         cp "${full_file_path}" "${tmp_file_path}"
 
         if [ "${classifier}" == 'pom' ]; then
-          local classifier_count="${#classifiers[@]}"
-
           pomFile="${tmp_file_path}"
-
-          # Special case: The POM is the only file
-          if [ "${classifier_count}" -eq 1 ]; then
-            deploy_files+=($tmp_file_path)
-          fi
-        else
-          deploy_files+=($tmp_file_path)
         fi
+
+        deploy_files["${classifier}"]=$tmp_file_path
       fi
     done
 
-    for deploy_file in "${deploy_files[@]}"; do
-      # `generatePom` is TRUE just in case we did not encounter a POM.
-      # Per docs, it should not actually get generated unless `pomFile` is
-      # blank.
-      package_invoke_maven gpg:sign-and-deploy-file \
-        "-DrepositoryId=${THIRD_PARTY_SIGNED_REPO_ID}" \
-        "-Durl=${THIRD_PARTY_RELEASES_URL}" \
-        "-DgeneratePom=true" \
-        "-DpomFile=${pomFile:-}" \
-        "-Dfile=${deploy_file}" \
-        "-DgroupId=${group_id}" \
-        "-DartifactId=${artifact_id}" \
-        "-Dversion=${version}" \
-        "-Dgpg.keyname=${WREN_THIRD_PARTY_SIGN_KEY_ID}" \
-        "-Dgpg.passphrase=${!passphrase_var}"
+    local classifier_count="${#classifiers[@]}"
+
+    for classifier in "${classifiers[@]}"; do
+      local deploy_file="${deploy_files[${classifier}]}"
+
+      # Special case: Handle a situation in which the POM is the *only* file we're deploying
+      if [[ "${classifier}" == "pom" && "${classifier_count}" -eq 1 ]]; then
+        package_invoke_maven gpg:sign-and-deploy-file \
+          "-DrepositoryId=${THIRD_PARTY_SIGNED_REPO_ID}" \
+          "-Durl=${THIRD_PARTY_RELEASES_URL}" \
+          "-Dfile=${deploy_file}" \
+          "-Dgpg.keyname=${WREN_THIRD_PARTY_SIGN_KEY_ID}" \
+          "-Dgpg.passphrase=${!passphrase_var}"
+
+      elif [[ "${classifier}" != "pom" ]]; then
+        package_invoke_maven gpg:sign-and-deploy-file \
+          "-DrepositoryId=${THIRD_PARTY_SIGNED_REPO_ID}" \
+          "-Durl=${THIRD_PARTY_RELEASES_URL}" \
+          "-Dfile=${deploy_file}" \
+          "-DpomFile=${pomFile}" \
+          "-Dgpg.keyname=${WREN_THIRD_PARTY_SIGN_KEY_ID}" \
+          "-Dgpg.passphrase=${!passphrase_var}"
+      fi
     done
   done
 
