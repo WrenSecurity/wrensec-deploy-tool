@@ -1,19 +1,6 @@
 ################################################################################
 # Shared Constants
 ################################################################################
-export PROJECTS=( \
-  "wrensec-parent" \
-  "wrensec-build-tools" \
-  "wrensec-bom" \
-  "wrensec-util" \
-  "wrensec-i18n-framework" \
-  "wrensec-guice" \
-  "wrensec-http-framework" \
-  "wrensec-rest" \
-  "wrensec-audit" \
-  "wrensec-persistit" \
-)
-
 export WRENDEPLOY_RC=".wren-deploy.rc"
 
 export JFROG_PROVIDER_BASE_URL="https://wrensecurity.jfrog.io/wrensecurity"
