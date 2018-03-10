@@ -13,28 +13,29 @@ Where `COMMAND` can be any of the following:
     Deletes all `sustaining/X.Y.Z` branches from the current package.
 
   - `patch-all-releases [SRC-REF] [STARTING-RELEASE-TAG]`  
-    Cherry-picks either `HEAD` or `SRC-REF` on to all release branches, 
-    optionally targeting only the release identified by the specified 
+    Cherry-picks either `HEAD` or `SRC-REF` on to all `sustaining/` release 
+    branches, optionally targeting only the release identified by the specified 
     `STARTING-RELEASE-TAG` and later releases (typically to resume a cherry pick 
     after fixing conflicts).
 
   - `compile-all-releases`  
-    Sequentially checks out each release of the current package and compiles it.
+    Sequentially checks out each sustaining release of the current package and 
+    compiles it.
 
   - `compile-current-release`  
     Compiles whatever version of the current package is checked out.
 
   - `deploy-all-releases`  
-    Sequentially checks out each release of the current package, compiles it, 
-    signs it, and then deploys it to JFrog.
+    Sequentially checks out each sustaining release of the current package, 
+    compiles it, signs it, and then deploys it to JFrog.
 
   - `deploy-current-release`  
     Compiles whatever version of the current package is checked out, then signs 
     it and deploys it to JFrog.
 
   - `verify-all-releases`  
-    Sequentially checks out each release of the current package and verifies the
-    GPG signatures of all its dependencies.
+    Sequentially checks out each sustaining release of the current package and 
+    verifies the GPG signatures of all its dependencies.
 
   - `verify-current-release`  
     Verifies the GPG signatures of all dependences for whatever version of the 
