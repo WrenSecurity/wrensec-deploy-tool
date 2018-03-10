@@ -34,6 +34,7 @@ function print_usage() {
   echo_error "Usage: ${script_name} <COMMAND>"
   echo_error ""
   echo_error "Where COMMAND can be any of the following:"
+  echo_error ""
   echo_error "  - create-sustaining-branches"
   echo_error "    Creates 'sustaining/X.Y.Z' branches in the current package"
   echo_error "    from all release tags in the package."
@@ -149,6 +150,14 @@ function print_usage() {
   echo_error "    signature (not the JAR itself) to JFrog."
   echo_error ""
   echo_error ""
+  echo_error "  - version or --version"
+  echo_error "    Displays the version number of Wren Deploy."
+  echo_error ""
+  echo_error ""
+  echo_error "  - help or --help"
+  echo_error "    Displays this command usage text."
+  echo_error ""
+  echo_error ""
   echo_error "In addition, a '${WRENDEPLOY_RC}' file must exist in the current"
   echo_error "working directory in order for the package in the current"
   echo_error "directory to be deployable. At a minimum, the file must export"
@@ -161,35 +170,39 @@ function print_usage() {
 }
 
 parse_args() {
-  command="${1:-UNSET}"
-
   if array_contains "--help" $@; then
-    return 1;
+    command="help"
+  elif array_contains "--version" $@; then
+    command="version"
   else
-    local commands_allowed=(\
-      "create-sustaining-branches" \
-      "delete-sustaining-branches" \
-      "patch-all-releases" \
-      "compile-all-releases" \
-      "compile-current-release" \
-      "deploy-all-releases" \
-      "deploy-current-release" \
-      "verify-all-releases" \
-      "verify-current-release" \
-      "list-unapproved-artifact-sigs" \
-      "capture-unapproved-artifact-sigs" \
-      "deploy-consensus-verified-artifacts" \
-      "sign-3p-artifacts" \
-      "sign-tools-jar" \
-    )
+    command="${1:-UNSET}"
+  fi
 
-    if ! array_contains "${command}" ${commands_allowed[@]}; then
-      return 1
-    else
-      shift
+  local commands_allowed=(\
+    "help" \
+    "version" \
+    "create-sustaining-branches" \
+    "delete-sustaining-branches" \
+    "patch-all-releases" \
+    "compile-all-releases" \
+    "compile-current-release" \
+    "deploy-all-releases" \
+    "deploy-current-release" \
+    "verify-all-releases" \
+    "verify-current-release" \
+    "list-unapproved-artifact-sigs" \
+    "capture-unapproved-artifact-sigs" \
+    "deploy-consensus-verified-artifacts" \
+    "sign-3p-artifacts" \
+    "sign-tools-jar" \
+  )
 
-      return 0
-    fi
+  if ! array_contains "${command}" ${commands_allowed[@]}; then
+    return 1
+  else
+    shift
+
+    return 0
   fi
 }
 
@@ -215,6 +228,13 @@ prepare_subcommand_args() {
       SUBCOMMAND_OPTIONS["${option_name}"]="${option_value}"
     fi
   done
+}
+
+fail_on_command_args() {
+  echo_error ""
+  echo_error "Try the '--help' option to see command usage."
+
+  exit 1;
 }
 
 ################################################################################
@@ -367,13 +387,14 @@ sign_tools_jar() {
   package_sign_tools_jar
 }
 
-fail_on_command_args() {
-  echo_error ""
-  echo_error "Try the '--help' option to see command usage."
-
-  exit 1;
+version() {
+  echo "Wren Deploy version ${WRENDEPLOY_VERSION}"
+  echo ""
 }
 
+help() {
+  print_usage
+}
 ################################################################################
 # Main Script
 ################################################################################

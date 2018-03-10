@@ -1,6 +1,9 @@
 ################################################################################
 # Shared Constants
 ################################################################################
+export WRENDEPLOY_VERSION="2.0"
+export PGPVERIFY_VERSION="1.2.0-wren1"
+
 export WRENDEPLOY_RC=".wren-deploy.rc"
 
 export JFROG_PROVIDER_BASE_URL="https://wrensecurity.jfrog.io/wrensecurity"
@@ -21,5 +24,3 @@ export WREN_THIRD_PARTY_SIGN_KEY_ID="D7F749B5"
 
 export WREN_DEP_KEY_WHITELIST_FILENAME="trustedkeys.properties"
 export WREN_DEP_KEY_WHITELIST_URL="http://wrensecurity.org/${WREN_DEP_KEY_WHITELIST_FILENAME}"
-
-export PGPVERIFY_VERSION="1.2.0-wren1"

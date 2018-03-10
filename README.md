@@ -96,6 +96,13 @@ Where `COMMAND` can be any of the following:
     in use on the local machine using the Wren Security third-party key, then 
     deploys the artifact signature (not the JAR itself) to JFrog.
 
+  - `version` or `--version`  
+    Displays the version number of Wren Deploy.
+
+
+  - `help` or `--help`  
+    Displays command usage text.
+
 In addition, a `.wren-deploy.rc` file must exist in the current working
 directory in order for the package in the current directory to be deployable. At
 a minimum, the file must export the variable `MAVEN_PACKAGE`. It can optionally
