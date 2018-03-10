@@ -36,8 +36,14 @@ package_compile_all_versions() {
 
 package_compile_current_version() {
   local compile_args=$(package_get_mvn_compile_args)
+  local passphrase_var="${WREN_OFFICIAL_SIGN_KEY_ID}_PASSPHRASE"
 
-  package_invoke_maven clean install ${compile_args}
+  creds_prompt_for_gpg_credentials "${WREN_OFFICIAL_SIGN_KEY_ID}"
+
+  package_invoke_maven clean install ${compile_args} \
+    "-Psign,forgerock-release" \
+    "-Dgpg.keyname=${WREN_OFFICIAL_SIGN_KEY_ID}" \
+    "-Dgpg.passphrase=${!passphrase_var}"
 }
 
 package_deploy_all_versions() {
