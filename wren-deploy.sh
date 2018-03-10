@@ -24,38 +24,6 @@ source "${SCRIPT_PATH}/includes/all_includes.sh"
 ################################################################################
 # CLI Argument Parsing & Help
 ################################################################################
-parse_args() {
-  command="${1:-UNSET}"
-
-  if array_contains "--help" $@; then
-    return 1;
-  else
-    local commands_allowed=(\
-      "create-sustaining-branches" \
-      "delete-sustaining-branches" \
-      "patch-all-releases" \
-      "compile-all-releases" \
-      "compile-current-release" \
-      "deploy-all-releases" \
-      "deploy-current-release" \
-      "verify-all-releases" \
-      "verify-current-release" \
-      "list-unapproved-artifact-sigs" \
-      "capture-unapproved-artifact-sigs" \
-      "sign-3p-artifacts" \
-      "sign-tools-jar" \
-    )
-
-    if ! array_contains "${command}" ${commands_allowed[@]}; then
-      return 1
-    else
-      shift
-
-      return 0
-    fi
-  fi
-}
-
 function print_usage() {
   script_name=`basename "${0}"`
 
@@ -159,6 +127,38 @@ function print_usage() {
   echo_error "'package_accept_release_tag()' in order to control which release"
   echo_error "tags are processed; if the function is not defined, all releases"
   echo_error "are processed, by default."
+}
+
+parse_args() {
+  command="${1:-UNSET}"
+
+  if array_contains "--help" $@; then
+    return 1;
+  else
+    local commands_allowed=(\
+      "create-sustaining-branches" \
+      "delete-sustaining-branches" \
+      "patch-all-releases" \
+      "compile-all-releases" \
+      "compile-current-release" \
+      "deploy-all-releases" \
+      "deploy-current-release" \
+      "verify-all-releases" \
+      "verify-current-release" \
+      "list-unapproved-artifact-sigs" \
+      "capture-unapproved-artifact-sigs" \
+      "sign-3p-artifacts" \
+      "sign-tools-jar" \
+    )
+
+    if ! array_contains "${command}" ${commands_allowed[@]}; then
+      return 1
+    else
+      shift
+
+      return 0
+    fi
+  fi
 }
 
 prepare_subcommand_args() {
