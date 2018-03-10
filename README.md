@@ -46,29 +46,46 @@ Where `COMMAND` can be any of the following:
     the Wren whitelist. The whitelist is located at
     http://wrensecurity.org/trustedkeys.properties.
 
-  - `capture-unapproved-artifact-sigs WRENSEC-HOME-PATH [--push] [--amend] [--force]`
+  - `capture-unapproved-artifact-sigs WRENSEC-HOME-PATH [--push] [--amend] [--force]`  
     Appends the name and GPG signature of each artifact dependency to the 
     whitelist in a checked-out copy of the `wrensec-home` project, then commits 
     the change. This can be used to rapidly add multiple artifacts to the 
     whitelist with a minimum of manual effort.
 
     **Options:**
-    - `--push`
+    - `--push`  
       Pushes the resulting changes to the default remote of the `wrensec-home`
       project.
 
-    - `--amend`
+    - `--amend`  
       Amends the previous commit of the 'wrensec-home' project, instead of 
       creating a new commit. Used with caution, this option allows a maintainer 
       to iterate on dependency signatures for an artifact as build failures are
       encountered during re-packaging.
 
-    - `--force`
+    - `--force`  
       When used with --push, the last commit is force-pushed to the default 
       remote. This should be used with caution as it re-writes repository 
       history and can result in a loss of other changes in the project if 
       multiple maintainers are making changes in the repository at the same 
       time.
+
+  - `deploy-consensus-verified-artifacts --repo-root=REPO-ROOT-PATH SEARCH-PATH`  
+    Searches `SEARCH_PATH` for all deployable artifacts, interpreting 
+    `REPO-ROOT-PATH` as the root of the archived repository (i.e. this is the 
+    equivalent to `~/.m2/repository`, but for an archived copy of a maven 
+    repository). Each artifact recognized is copied to a temporary folder, 
+    signed using the Wren Security third-party key, then deployed to BinTray 
+    under this project:
+    https://bintray.com/wrensecurity/forgerock-archive/consensus-verified.
+    
+    For example, this would deploy `form2js` from a local Maven repository
+    archive located in `./forgerock-archive`:
+    ```
+      wren-deploy deploy-consensus-verified-artifact \
+        --repo-root=./forgerock-archive \
+        ./forgerock-archive/org/forgerock/commons/ui/libs/form2js
+    ```
 
   - `sign-3p-artifacts`  
     Generates GPG signatures for all unsigned third-party artifacts using the 

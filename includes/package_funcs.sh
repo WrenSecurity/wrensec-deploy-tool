@@ -20,6 +20,7 @@ package_create_all_sustaining_branches() {
 
     if git_branch_exists "${branch_name}"; then
       echo "Sustaining branch ${branch_name} already exists; skipping."
+      echo ""
     else
       git branch "${branch_name}" "${tag}"
     fi
@@ -128,10 +129,12 @@ package_sign_3p_artifacts_for_current_version() {
 # passing arrays and hashes between functions is extremely difficult in bash.)
 #
 package_sign_and_deploy_artifacts() {
+  creds_prompt_for_gpg_credentials "${WREN_THIRD_PARTY_SIGN_KEY_ID}"
+
   # TODO: Consider building this in as a separate profile in the parent POM
   # Maven can probably do a better job with this than Bash
   #
-  declare -n file_list=$1
+  declare -n artifact_list=$1
 
   declare -A combined_artifact_ids
   declare -A artifact_index
@@ -140,9 +143,9 @@ package_sign_and_deploy_artifacts() {
   local package_regex="^([^:]+):([^:]+):([^:]+):(.+)$"
   local tmpdir=$(mktemp -d '/tmp/wren-deploy.XXXXXXXXXX')
 
-  # Index all the files, so we can find the POM
-  for file in "${file_list[@]}"; do
-    if [[ $file =~ $package_regex ]]; then
+  # Index all the artifact files, so we can find the POM
+  for artifact in "${artifact_list[@]}"; do
+    if [[ $artifact =~ $package_regex ]]; then
       local group_id="${BASH_REMATCH[1]}"
       local artifact_id="${BASH_REMATCH[2]}"
       local classifier="${BASH_REMATCH[3]}"
@@ -194,9 +197,11 @@ package_sign_and_deploy_artifacts() {
       classifiers+=( 'pom' )
       artifact_index[$path_key]="${pom_path}"
 
-      echo_error "WARNING: '${artifact_id}:${version}' has a signed POM but unsigned artifacts." \
-                 "This is an unusual situation. The current signature on the POM is going to be" \
-                 "disregarded so that the POM can be signed along with all of its artifacts."
+      echo_error "WARNING: '${artifact_id}:${version}' has a signed POM but" \
+                 "unsigned artifacts. This is an unusual situation. The" \
+                 "current signature on the POM is going to be disregarded so" \
+                 "that the POM can be signed along with all of its artifacts."
+      echo_error ""
     fi
 
     for classifier in "${classifiers[@]}"; do
@@ -205,9 +210,10 @@ package_sign_and_deploy_artifacts() {
       local full_file_path="${HOME}/.m2/repository/${relative_file_path}"
 
       if [ ! -f "${full_file_path}" ]; then
-        echo_error "Unable to sign '${relative_file_path}' because artifact" \
-                   "was not located in the local Maven repository at" \
+        echo_error "ERROR: Unable to sign '${relative_file_path}' because "\
+                   "artifact was not located in the local Maven repository at" \
                    "'${full_file_path}'. Skipping..."
+        echo_error ""
       else
         local base_name=$(basename "${full_file_path}")
         local tmp_file_path="${tmpdir}/${base_name}"
@@ -216,7 +222,7 @@ package_sign_and_deploy_artifacts() {
         cp "${full_file_path}" "${tmp_file_path}"
 
         if [ "${classifier}" == 'pom' ]; then
-          pomFile="${tmp_file_path}"
+          pom_file="${tmp_file_path}"
         fi
 
         deploy_files["${classifier}"]=$tmp_file_path
@@ -242,7 +248,7 @@ package_sign_and_deploy_artifacts() {
           "-DrepositoryId=${THIRD_PARTY_SIGNED_REPO_ID}" \
           "-Durl=${THIRD_PARTY_RELEASES_URL}" \
           "-Dfile=${deploy_file}" \
-          "-DpomFile=${pomFile}" \
+          "-DpomFile=${pom_file}" \
           "-Dgpg.keyname=${WREN_THIRD_PARTY_SIGN_KEY_ID}" \
           "-Dgpg.passphrase=${!passphrase_var}"
       fi
@@ -250,6 +256,171 @@ package_sign_and_deploy_artifacts() {
   done
 
   rm -rf "${tmpdir}"
+}
+
+##
+# Takes in repo base path and a search page, search for artifact files, signs
+# them, and deploys the, to BinTray.
+#
+# This is used for so-called "consensus verified" artifacts -- copies of
+# binaries from ForgeRock for which Wren does not yet have source code, that are
+# being trusted because multiple independent copies of the binaries have the
+# same hash (thus indicating it is unlikely that they were tampered with).
+#
+# Unlike `package_sign_and_deploy_artifacts`, this takes in a search path rather
+# than a defined list of artifacts. A base path is necessary for determining
+# which part of the search path represents the path to the repository, so that
+# the rest can be interpreted as part of the package name (per Maven
+# conventions (e.g. `org/forgerock/thing/3.0/thing-3.0` would be the path for
+# `org.forgerock:thing:3.0` within a repo).
+#
+# (Apologies in advance for the sheer length of this function. Unfortunately,
+# passing arrays and hashes between functions is extremely difficult in bash.)
+#
+package_sign_and_deploy_consensus_signed_artifact() {
+  creds_prompt_for_gpg_credentials "${WREN_THIRD_PARTY_SIGN_KEY_ID}"
+
+  local repo_base_path=$(realpath "${1}")
+  local search_path=$(realpath "${2}")
+
+  local file_list=$(\
+    find "${search_path}" \
+      -type f \
+      -not -name '*.md5' \
+      -not -name '*.sha1' \
+      -not -name '*.lastUpdated' \
+      -not -name '_*.*' | \
+    sed "s!${repo_base_path}\/!!" \
+  )
+
+  declare -A combined_artifact_ids
+  declare -A artifact_index
+
+  local passphrase_var="${WREN_THIRD_PARTY_SIGN_KEY_ID}_PASSPHRASE"
+  local path_regex="^(.+)\/([^\/]+)\/([^\/]+)\/(.+)-([0-9\.]+)(-(.*))?\.(.*)$"
+  local tmp_dir=$(mktemp -d '/tmp/wren-deploy.XXXXXXXXXX')
+
+  # Index all the files and locate the POM
+  for file in ${file_list}; do
+    if [[ $file =~ $path_regex ]]; then
+      local group_id="${BASH_REMATCH[1]//\//.}"
+      local artifact_id="${BASH_REMATCH[2]}"
+      local classifier="${BASH_REMATCH[7]}"
+      local version="${BASH_REMATCH[5]}"
+      local extension="${BASH_REMATCH[8]}"
+
+      local combined_id="${group_id}:${artifact_id}:${version}"
+      local path="${repo_base_path}/${file}"
+
+      # We're using a hash to de-dupe the IDs for us
+      combined_artifact_ids["${combined_id}"]=1
+
+      artifact_index["${combined_id}_group_id"]="${group_id}"
+      artifact_index["${combined_id}_artifact_id"]="${artifact_id}"
+      artifact_index["${combined_id}_version"]="${version}"
+
+      if [ "${extension}" == "pom" ]; then
+        artifact_index["${combined_id}_pom_file"]="${path}"
+      else
+        local classifier_and_ext="${classifier}-${extension}"
+
+        artifact_index["${combined_id}_classifiers"]+="${classifier_and_ext} "
+        artifact_index["${combined_id}_${classifier_and_ext}_path"]="${path}"
+      fi
+    fi
+  done
+
+  # Now, deploy each artifact
+  for combined_id in "${!combined_artifact_ids[@]}"; do
+    local group_id_key="${combined_id}_group_id"
+    local group_id="${artifact_index[$group_id_key]}"
+
+    local artifact_id_key="${combined_id}_artifact_id"
+    local artifact_id="${artifact_index[$artifact_id_key]}"
+
+    local version_key="${combined_id}_version"
+    local version="${artifact_index[$version_key]}"
+
+    local pom_key="${combined_id}_pom_file"
+    local pom_file="${artifact_index[$pom_key]:-}" # Missing POM handled below
+
+    local classifiers_key="${combined_id}_classifiers"
+    local classifier_str="${artifact_index[$classifiers_key]:-}"
+    local classifiers=()
+
+    echo ""
+    echo "Found ${combined_id}"
+    echo ""
+
+    for classifier in $(echo "${classifier_str}"); do
+      classifiers+=($classifier)
+    done
+
+    declare -a deploy_classifiers=()
+    declare -A deploy_files=()
+
+    for classifier in "${classifiers[@]}"; do
+      local path_key="${combined_id}_${classifier}_path"
+      local file_path="${artifact_index[$path_key]}"
+
+      if [ ! -f "${file_path}" ]; then
+        echo_error "ERROR: Unable to publish '${combined_id}' because the" \
+                   "artifact was unexpectedly not found at '${file_path}'." \
+                   "Skipping..."
+        echo_error ""
+      else
+        local base_name=$(basename "${file_path}")
+        local tmp_file_path="${tmp_dir}/${base_name}"
+
+        # Copy to temp path to avoid modifying the source files
+        cp "${file_path}" "${tmp_file_path}"
+
+        deploy_files["${classifier}"]=$tmp_file_path
+      fi
+    done
+
+    local classifier_count="${#classifiers[@]}"
+
+    if [ -f "${pom_file}" ]; then
+      local base_pom_name=$(basename "${pom_file}")
+      local tmp_pom_file_path="${tmp_dir}/${base_pom_name}"
+
+      # Copy to temp path to avoid modifying the source files
+      cp "${pom_file}" "${tmp_pom_file_path}"
+
+      # Special case: Handle a situation in which the POM is the *only* file we're deploying
+      if [ "${classifier_count}" -eq 0 ]; then
+        package_invoke_maven gpg:sign-and-deploy-file \
+          "-DrepositoryId=${CONSENSUS_VERIFIED_REPO_ID}" \
+          "-Durl=${CONSENSUS_VERIFIED_RELEASES_URL}" \
+          "-Dfile=${tmp_pom_file_path}" \
+          "-Dgpg.keyname=${WREN_THIRD_PARTY_SIGN_KEY_ID}" \
+          "-Dgpg.passphrase=${!passphrase_var}"
+      else
+        for classifier in "${classifiers[@]}"; do
+          local deploy_file="${deploy_files[${classifier}]}"
+
+          package_invoke_maven gpg:sign-and-deploy-file \
+            "-DrepositoryId=${CONSENSUS_VERIFIED_REPO_ID}" \
+            "-Durl=${CONSENSUS_VERIFIED_RELEASES_URL}" \
+            "-Dfile=${deploy_file}" \
+            "-DpomFile=${tmp_pom_file_path}" \
+            "-Dgpg.keyname=${WREN_THIRD_PARTY_SIGN_KEY_ID}" \
+            "-Dgpg.passphrase=${!passphrase_var}"
+        done
+      fi
+
+      echo ""
+    else
+      pom_search_folder=$(dirname "${file_path}")
+
+      echo_error "ERROR: Unable to publish '${combined_id}' because the POM " \
+                 "was not found in '${pom_search_folder}'. Skipping..."
+      echo_error ""
+    fi
+  done
+
+  rm -rf "${tmp_dir}"
 }
 
 package_get_all_unsigned_3p_artifacts() {
@@ -314,12 +485,12 @@ package_capture_unapproved_sigs_for_current_version() {
 }
 
 package_sign_tools_jar() {
-  local tmpdir=$(mktemp -d '/tmp/wren-deploy.XXXXXXXXXX')
+  local tmp_dir=$(mktemp -d '/tmp/wren-deploy.XXXXXXXXXX')
 
   local java_version=$(java_get_version)
   local tools_jar_path=$(java_get_jdk_tools_path)
   local tools_jar_deploy_path="${THIRD_PARTY_SIGNED_PATH}/com/sun/tools/${java_version}/tools-${java_version}.jar"
-  local tools_jar_tmp_path="${tmpdir}/tools.jar"
+  local tools_jar_tmp_path="${tmp_dir}/tools.jar"
 
   local passphrase_var="${WREN_THIRD_PARTY_SIGN_KEY_ID}_PASSPHRASE"
 
@@ -335,7 +506,7 @@ package_sign_tools_jar() {
     "-Dgpg.keyname=${WREN_THIRD_PARTY_SIGN_KEY_ID}" \
     "-Dgpg.passphrase=${!passphrase_var}"
 
-  rm -rf "${tmpdir}"
+  rm -rf "${tmp_dir}"
 
   # Per Oracle licensing, we CANNOT actually publish the JAR file itself.
   package_delete_file_from_jfrog "${tools_jar_deploy_path}"
@@ -358,8 +529,8 @@ package_delete_file_from_jfrog() {
 
 package_load_config() {
   if [ ! -f "${WRENDEPLOY_RC}" ]; then
-    echo_error "A '${WRENDEPLOY_RC}' file must exist in this package in order "
-    echo_error "to be deployable."
+    echo_error "A '${WRENDEPLOY_RC}' file must exist in this package in order" \
+               "to be deployable."
     return 1
   else
     source "${WRENDEPLOY_RC}"

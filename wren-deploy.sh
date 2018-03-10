@@ -38,9 +38,11 @@ function print_usage() {
   echo_error "    Creates 'sustaining/X.Y.Z' branches in the current package"
   echo_error "    from all release tags in the package."
   echo_error ""
+  echo_error ""
   echo_error "  - delete-sustaining-branches"
   echo_error "    Deletes all 'sustaining/X.Y.Z' branches from the current"
   echo_error "    package."
+  echo_error ""
   echo_error ""
   echo_error "  - patch-all-releases [SRC-REF] [STARTING-RELEASE-TAG]"
   echo_error "    Cherry-picks either HEAD or SRC-REF on to all 'sustaining/'"
@@ -49,37 +51,45 @@ function print_usage() {
   echo_error "    releases (typically to resume a cherry pick after fixing"
   echo_error "    conflicts)."
   echo_error ""
+  echo_error ""
   echo_error "  - compile-all-releases"
   echo_error "    Sequentially checks out each sustaining release of the"
   echo_error "    current package, compiles it, and installs it to the local"
   echo_error "    Maven repository."
   echo_error ""
+  echo_error ""
   echo_error "  - compile-current-release"
   echo_error "    Compiles whatever version of the current package is checked"
   echo_error "    out, and then installs it to the local Maven repository."
+  echo_error ""
   echo_error ""
   echo_error "  - deploy-all-releases"
   echo_error "    Sequentially checks out each sustaining release of the"
   echo_error "    current package, compiles it, signs it, and then deploys it"
   echo_error "    to JFrog."
   echo_error ""
+  echo_error ""
   echo_error "  - deploy-current-release"
   echo_error "    Compiles whatever version of the current package is checked"
   echo_error "    out, then signs it and deploys it to JFrog."
+  echo_error ""
   echo_error ""
   echo_error "  - verify-all-releases"
   echo_error "    Sequentially checks out each sustaining release of the"
   echo_error "    current package and verifies the GPG signatures of all"
   echo_error "    its dependencies."
   echo_error ""
+  echo_error ""
   echo_error "  - verify-current-release"
   echo_error "    Verifies the GPG signatures of all dependencies for whatever"
   echo_error "    version of the current package is checked out."
+  echo_error ""
   echo_error ""
   echo_error "  - list-unapproved-artifact-sigs"
   echo_error "    Lists the name and GPG signature of each artifact dependency"
   echo_error "    that is not on the Wren whitelist. The whitelist is located"
   echo_error "    at '${WREN_DEP_KEY_WHITELIST_URL}'."
+  echo_error ""
   echo_error ""
   echo_error "  - capture-unapproved-artifact-sigs WRENSEC-HOME-PATH [--push] [--amend] [--force]"
   echo_error "    Appends the name and GPG signature of each artifact"
@@ -107,16 +117,37 @@ function print_usage() {
   echo_error "      other changes in the project if multiple maintainers are"
   echo_error "      making changes in the repository at the same time."
   echo_error ""
+  echo_error ""
+  echo_error "  - deploy-consensus-verified-artifacts --repo-root=REPO-ROOT-PATH SEARCH-PATH"
+  echo_error "    Searches 'SEARCH_PATH' for all deployable artifacts,"
+  echo_error "    interpreting 'REPO-ROOT-PATH' as the root of the archived"
+  echo_error "    repository (i.e. this is the equivalent to"
+  echo_error "    '~/.m2/repository', but for an archived copy of a maven"
+  echo_error "    repository). Each artifact recognized is copied to a"
+  echo_error "    temporary folder, signed using the Wren Security third-party"
+  echo_error "    key, then deployed to BinTray under this project:"
+  echo_error "    https://bintray.com/wrensecurity/forgerock-archive/consensus-verified."
+  echo_error ""
+  echo_error "    For example, this would deploy 'form2js' from a local Maven"
+  echo_error "    repository archive located in './forgerock-archive':"
+  echo_error ""
+  echo_error "      wren-deploy deploy-consensus-verified-artifact \\"
+  echo_error "        --repo-root=./forgerock-archive \\"
+  echo_error "        ./forgerock-archive/org/forgerock/commons/ui/libs/form2js"
+  echo_error ""
+  echo_error ""
   echo_error "  - sign-3p-artifacts"
   echo_error "    Generates GPG signatures for all unsigned third-party"
   echo_error "    artifacts using the Wren Security third-party key, then"
   echo_error "    deploys the artifacts to JFrog."
+  echo_error ""
   echo_error ""
   echo_error "  - sign-tools-jar"
   echo_error "    Generates a GPG signature for the version of the JDK"
   echo_error "    'tools.jar' currently in use on the local machine using the"
   echo_error "    Wren Security third-party key, then deploys the artifact"
   echo_error "    signature (not the JAR itself) to JFrog."
+  echo_error ""
   echo_error ""
   echo_error "In addition, a '${WRENDEPLOY_RC}' file must exist in the current"
   echo_error "working directory in order for the package in the current"
@@ -147,6 +178,7 @@ parse_args() {
       "verify-current-release" \
       "list-unapproved-artifact-sigs" \
       "capture-unapproved-artifact-sigs" \
+      "deploy-consensus-verified-artifacts" \
       "sign-3p-artifacts" \
       "sign-tools-jar" \
     )
@@ -168,14 +200,19 @@ prepare_subcommand_args() {
   shift
 
   for argument; do
-    local option_name
-
     # Handle option arguments specially
     if [ "${argument:0:2}" != "--" ]; then
       SUBCOMMAND_ARGS+=("${argument}")
     else
-      option_name="${argument:2}"
-      SUBCOMMAND_OPTIONS["${option_name}"]=1
+      local option_name
+      local option_value
+
+      full_option="${argument:2}"
+
+      option_name="${full_option%=*}"
+      option_value="${full_option##*=}"
+
+      SUBCOMMAND_OPTIONS["${option_name}"]="${option_value}"
     fi
   done
 }
@@ -242,12 +279,13 @@ capture_unapproved_artifact_sigs() {
   local wrensec_home_path="${1:-UNSET}"
 
   if [ "${wrensec_home_path}" == "UNSET" ]; then
-    echo_error "WRENSEC-HOME-PATH must be specified."
+    echo_error "ERROR: WRENSEC-HOME-PATH must be specified."
     fail_on_command_args
   fi;
 
   if [ ! -d "${wrensec_home_path}/.git" ]; then
-    echo_error "WRENSEC-HOME-PATH must exist and contain a GIT repository."
+    echo_error "ERROR: WRENSEC-HOME-PATH must exist and contain a GIT" \
+               "repository."
     fail_on_command_args
   fi;
 
@@ -260,6 +298,39 @@ capture_unapproved_artifact_sigs() {
 
   package_capture_unapproved_sigs_for_current_version \
     "${wrensec_home_path}" "${amend}" "${push}" "${force}"
+}
+
+deploy_consensus_verified_artifacts() {
+  local repo_root="${SUBCOMMAND_OPTIONS['repo-root']:-UNSET}"
+  local search_path="${1:-UNSET}"
+
+  if [ "${repo_root}" == "UNSET" ]; then
+    echo_error "ERROR: '--repo-root' must be specified."
+    fail_on_command_args
+  fi;
+
+  if [ ! -d "${repo_root}" ]; then
+    echo_error "ERROR: '--repo-root' must point to an existing directory."
+    fail_on_command_args
+  fi;
+
+  if [ "${search_path}" == "UNSET" ]; then
+    echo_error "ERROR: 'SEARCH-PATH' must be specified."
+    fail_on_command_args
+  fi;
+
+  if [ ! -d "${search_path}" ]; then
+    echo_error "ERROR: 'SEARCH-PATH' must point to an existing directory."
+    fail_on_command_args
+  fi;
+
+  echo "Searching for archived artifacts to deploy to BinTray"
+  echo ""
+  echo "Repo Root:   ${repo_root}"
+  echo "Search Path: ${search_path}"
+
+  package_sign_and_deploy_consensus_signed_artifact \
+    "${repo_root}" "${search_path}"
 }
 
 sign_3p_artifacts() {
@@ -282,7 +353,7 @@ fail_on_command_args() {
 ################################################################################
 # Main Script
 ################################################################################
-if ! parse_args $@; then
+if ! parse_args "$@"; then
   print_usage
   exit 1
 else
@@ -293,7 +364,7 @@ else
   declare -a SUBCOMMAND_ARGS
   declare -A SUBCOMMAND_OPTIONS
 
-  prepare_subcommand_args $@
+  prepare_subcommand_args "$@"
 
-  eval "${func_name} ${SUBCOMMAND_ARGS[@]:-}"
+  eval "${func_name} '${SUBCOMMAND_ARGS[@]:-}'"
 fi
