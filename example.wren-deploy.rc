@@ -10,8 +10,6 @@
 # redundant or are missing dependencies).
 #
 export MAVEN_PACKAGE="forgerock-build-tools"
-export BINTRAY_PACKAGE="wrensec-build-tools"
-export JFROG_PACKAGE="org/forgerock/forgerock-build-tools/"
 
 package_accept_release_tag() {
   local tag_name="${1}"

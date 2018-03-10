@@ -127,7 +127,7 @@ function print_usage() {
   echo_error "In addition, a '${WRENDEPLOY_RC}' file must exist in the current"
   echo_error "working directory in order for the package in the current"
   echo_error "directory to be deployable. At a minimum, the file must export"
-  echo_error "the variables BINTRAY_PACKAGE, JFROG_PACKAGE, and MAVEN_PACKAGE."
+  echo_error "the variable MAVEN_PACKAGE."
   echo_error "It can optionally export MVN_COMPILE_ARGS to modify the command"
   echo_error "line passed to Maven during compilation. Finally, it can also"
   echo_error "define the function 'package_accept_release_tag()' in order to"

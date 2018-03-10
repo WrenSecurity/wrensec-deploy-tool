@@ -60,10 +60,9 @@ Where `COMMAND` can be any of the following:
 
 In addition, a `.wren-deploy.rc` file must exist in the current working
 directory in order for the package in the current directory to be deployable. At
-a minimum, the file must export the variables `BINTRAY_PACKAGE`,
-`JFROG_PACKAGE`, and `MAVEN_PACKAGE`. It can optionally export
-`MVN_COMPILE_ARGS` to modify the command line passed to Maven during
-compilation. Finally, it can also define the function
-`package_accept_release_tag()` in order to control which release tags are
+a minimum, the file must export the variable `MAVEN_PACKAGE`. It can optionally
+export `MVN_COMPILE_ARGS` to modify the command line passed to Maven during 
+compilation. Finally, it can also define the function 
+`package_accept_release_tag()` in order to control which release tags are 
 processed; if the function is not defined, all releases are processed, by
 default.
