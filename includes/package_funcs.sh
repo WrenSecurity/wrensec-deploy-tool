@@ -93,7 +93,7 @@ package_verify_keys_for_current_version() {
   #
   package_invoke_maven \
     com.github.s4u.plugins:pgpverify-maven-plugin:${PGPVERIFY_VERSION}:check \
-    "-Dpgpverify.keysMapLocation=${WREN_DEP_KEY_WHITELIST}" \
+    "-Dpgpverify.keysMapLocation=${WREN_DEP_KEY_WHITELIST_URL}" \
     "-Dignore-artifact-sigs"
 }
 
@@ -257,6 +257,60 @@ package_get_all_unsigned_3p_artifacts() {
     grep "\[WARNING\] No signature for" | \
     sed -r 's/^\[WARNING\] No signature for (.*)$/\1/' |
     sort
+}
+
+package_capture_unapproved_sigs_for_current_version() {
+  local wrensec_home_path="${1}"
+
+  local should_amend="${2}"
+  local should_push="${3}"
+  local should_force="${4}"
+
+  local trusted_key_path=$(\
+    realpath "${wrensec_home_path}/${WREN_DEP_KEY_WHITELIST_FILENAME}" \
+  )
+
+  local git_dir=$(\
+    realpath "${wrensec_home_path}/.git" \
+  )
+
+  local git_cmd="git '--work-tree=${wrensec_home_path}' '--git-dir=${git_dir}'"
+
+  local package_name="${MAVEN_PACKAGE}"
+  local package_version=$(git_get_current_sustaining_version)
+
+  echo "Appending dependencies to '${trusted_key_path}'"
+  echo ""
+  package_get_all_unsigned_3p_artifacts >> "${trusted_key_path}"
+
+  echo "Changes:"
+  echo ""
+  ${git_cmd} diff
+
+  echo ""
+  echo "Committing..."
+  echo ""
+  ${git_cmd} add "${trusted_key_path}"
+
+  if [ "${should_amend}" == "1" ]; then
+    ${git_cmd} commit --amend --no-edit
+  else
+    commit_message="Add deps for \`${package_name}\` ${package_version}"
+
+    ${git_cmd} commit "--message=${commit_message}" --no-edit
+  fi
+
+  if [ "${should_push}" == "1" ]; then
+    if [ "${should_force}" == "1" ]; then
+      local push_option="--force-with-lease"
+    else
+      local push_option=""
+    fi
+
+    echo "Pushing..."
+    echo ""
+    ${git_cmd} push ${push_option} origin
+  fi
 }
 
 package_sign_tools_jar() {

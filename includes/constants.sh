@@ -26,6 +26,7 @@ export THIRD_PARTY_RELEASES_URL="${JFROG_PROVIDER_BASE_URL}/${THIRD_PARTY_SIGNED
 export WREN_OFFICIAL_SIGN_KEY_ID="C081F89B"
 export WREN_THIRD_PARTY_SIGN_KEY_ID="D7F749B5"
 
-export WREN_DEP_KEY_WHITELIST="http://wrensecurity.org/trustedkeys.properties"
+export WREN_DEP_KEY_WHITELIST_FILENAME="trustedkeys.properties"
+export WREN_DEP_KEY_WHITELIST_URL="http://wrensecurity.org/${WREN_DEP_KEY_WHITELIST_FILENAME}"
 
 export PGPVERIFY_VERSION="1.2.0-wren1"

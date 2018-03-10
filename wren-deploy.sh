@@ -41,6 +41,7 @@ parse_args() {
       "verify-all-releases" \
       "verify-current-release" \
       "list-unapproved-artifact-sigs" \
+      "capture-unapproved-artifact-sigs" \
       "sign-3p-artifacts" \
       "sign-tools-jar" \
     )
@@ -110,7 +111,33 @@ function print_usage() {
   echo_error "  - list-unapproved-artifact-sigs"
   echo_error "    Lists the name and GPG signature of each artifact dependency"
   echo_error "    that is not on the Wren whitelist. The whitelist is located"
-  echo_error "    at '${WREN_DEP_KEY_WHITELIST}'."
+  echo_error "    at '${WREN_DEP_KEY_WHITELIST_URL}'."
+  echo_error ""
+  echo_error "  - capture-unapproved-artifact-sigs WRENSEC-HOME-PATH [--push] [--amend] [--force]"
+  echo_error "    Appends the name and GPG signature of each artifact"
+  echo_error "    dependency to the whitelist in a checked-out copy of the"
+  echo_error "    'wrensec-home' project, then commits the change. This can be"
+  echo_error "    used to rapidly add multiple artifacts to the whitelist with"
+  echo_error "    a minimum of manual effort."
+  echo_error ""
+  echo_error "    Options:"
+  echo_error "      --push"
+  echo_error "      Pushes the resulting changes to the default remote of the"
+  echo_error "      'wrensec-home' project."
+  echo_error ""
+  echo_error "      --amend"
+  echo_error "      Amends the previous commit of the 'wrensec-home' project,"
+  echo_error "      instead of creating a new commit. Used with caution, this"
+  echo_error "      option allows a maintainer to iterate on dependency"
+  echo_error "      signatures for an artifact as build failures are"
+  echo_error "      encountered during re-packaging."
+  echo_error ""
+  echo_error "      --force"
+  echo_error "      When used with --push, the last commit is force-pushed to"
+  echo_error "      the default remote. This should be used with caution as it"
+  echo_error "      re-writes repository history and can result in a loss of"
+  echo_error "      other changes in the project if multiple maintainers are"
+  echo_error "      making changes in the repository at the same time."
   echo_error ""
   echo_error "  - sign-3p-artifacts"
   echo_error "    Generates GPG signatures for all unsigned third-party"
@@ -135,17 +162,21 @@ function print_usage() {
 }
 
 prepare_subcommand_args() {
-  args=()
+  SUBCOMMAND_ARGS=()
 
   # Skip command arg
   shift
 
   for argument; do
-    # Skip option arguments
-    if [ "${argument:0:2}" != "--" ]; then
-      args+=("${argument}")
-    fi
+    local option_name
 
+    # Handle option arguments specially
+    if [ "${argument:0:2}" != "--" ]; then
+      SUBCOMMAND_ARGS+=("${argument}")
+    else
+      option_name="${argument:2}"
+      SUBCOMMAND_OPTIONS["${option_name}"]=1
+    fi
   done
 }
 
@@ -207,6 +238,30 @@ list_unapproved_artifact_sigs() {
   package_report_unapproved_sigs_for_current_version
 }
 
+capture_unapproved_artifact_sigs() {
+  local wrensec_home_path="${1:-UNSET}"
+
+  if [ "${wrensec_home_path}" == "UNSET" ]; then
+    echo_error "WRENSEC-HOME-PATH must be specified."
+    fail_on_command_args
+  fi;
+
+  if [ ! -d "${wrensec_home_path}/.git" ]; then
+    echo_error "WRENSEC-HOME-PATH must exist and contain a GIT repository."
+    fail_on_command_args
+  fi;
+
+  local amend=${SUBCOMMAND_OPTIONS['amend']+1}
+  local push=${SUBCOMMAND_OPTIONS['push']+1}
+  local force=${SUBCOMMAND_OPTIONS['force']+1}
+
+  echo "Capturing all dependencies with signatures not on the whitelist"
+  echo ""
+
+  package_capture_unapproved_sigs_for_current_version \
+    "${wrensec_home_path}" "${amend}" "${push}" "${force}"
+}
+
 sign_3p_artifacts() {
   echo "Signing unsigned third-party artifacts and deploying to JFrog"
   package_sign_3p_artifacts_for_current_version
@@ -217,17 +272,28 @@ sign_tools_jar() {
   package_sign_tools_jar
 }
 
+fail_on_command_args() {
+  echo_error ""
+  echo_error "Try the '--help' option to see command usage."
+
+  exit 1;
+}
+
 ################################################################################
 # Main Script
 ################################################################################
 if ! parse_args $@; then
   print_usage
+  exit 1
 else
   package_load_config
 
   func_name="${command//-/_}"
 
+  declare -a SUBCOMMAND_ARGS
+  declare -A SUBCOMMAND_OPTIONS
+
   prepare_subcommand_args $@
 
-  eval "${func_name}" ${args[@]:-}
+  eval "${func_name} ${SUBCOMMAND_ARGS[@]:-}"
 fi

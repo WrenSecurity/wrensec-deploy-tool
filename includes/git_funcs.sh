@@ -71,12 +71,20 @@ git_get_sorted_tag_list() {
   git tag | sort -V
 }
 
+git_get_current_sustaining_version() {
+  git_get_current_branch_name | sed "s/^sustaining\///"
+}
+
 git_list_sustaining_versions() {
   git_list_release_branches | sed "s/^sustaining\///"
 }
 
 git_list_release_branches() {
   git_get_branch_list | grep -e "^sustaining/" | sort -V
+}
+
+git_get_current_branch_name() {
+  git symbolic-ref HEAD --short
 }
 
 git_get_branch_list() {
