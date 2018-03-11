@@ -7,6 +7,9 @@ and this project adheres to
 
 ## 2.1.0 - Unreleased
 ### Added
+- Added new command for easily signing and tagging multiple sustaining releases:
+  `tag-sustaining-branches`
+
 - Added experimental Bash completion support.
   See instructions at the top of `./bash_completion/wren-deploy.sh`.
 

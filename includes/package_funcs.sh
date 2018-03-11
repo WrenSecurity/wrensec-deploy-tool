@@ -29,6 +29,21 @@ package_create_all_sustaining_branches() {
   echo ""
 }
 
+package_tag_all_sustaining_versions() {
+  for branch in $(git_list_release_branches); do
+    local version="${branch//sustaining\//}"
+
+    git tag "${version}" "${branch}" \
+      --annotate \
+      --sign \
+      --message "Version ${version}";
+
+    echo "Tagged and signed '${version}'."
+  done
+
+  echo ""
+}
+
 package_delete_all_sustaining_branches() {
   for branch in $(git_list_release_branches); do
     git branch -D "${branch}"

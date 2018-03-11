@@ -40,6 +40,20 @@ function print_usage() {
   echo_error "    from all release tags in the package."
   echo_error ""
   echo_error ""
+  echo_error "  - tag-sustaining-branches"
+  echo_error "    Tags all 'sustaining/X.Y.Z' branches of the current package."
+  echo_error "    Each tag is annotated and signed with the GPG signature of"
+  echo_error "    the current GIT user."
+  echo_error ""
+  echo_error "    Before running this command, you will need to generate a GPG"
+  echo_error "    key with 'gpg --gen-key' and then set that as your GIT"
+  echo_error "    signing key with:"
+  echo_error ""
+  echo_error "      git config --global user.signingkey KEY_ID"
+  echo_error ""
+  echo_error "    With KEY_ID being the ID of the key (e.g. 1FA76C5D)."
+  echo_error ""
+  echo_error ""
   echo_error "  - delete-sustaining-branches"
   echo_error "    Deletes all 'sustaining/X.Y.Z' branches from the current"
   echo_error "    package."
@@ -182,6 +196,7 @@ parse_args() {
     "help" \
     "version" \
     "create-sustaining-branches" \
+    "tag-sustaining-branches" \
     "delete-sustaining-branches" \
     "patch-all-releases" \
     "compile-all-releases" \
@@ -246,6 +261,14 @@ create_sustaining_branches() {
   echo "Creating all missing sustaining branches"
   echo ""
   package_create_all_sustaining_branches "${MAVEN_PACKAGE}"
+}
+
+tag_sustaining_branches() {
+  package_load_config
+
+  echo "Tagging all sustaining branches as signed releases"
+  echo ""
+  package_tag_all_sustaining_versions
 }
 
 delete_sustaining_branches() {

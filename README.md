@@ -8,6 +8,20 @@ Where `COMMAND` can be any of the following:
   - `create-sustaining-branches`  
     Creates `sustaining/X.Y.Z` branches in the current package from all release
     tags in the package.
+    
+  - `tag-sustaining-branches`  
+    Tags all `sustaining/X.Y.Z` branches of the current package. Each tag is 
+    annotated and signed with the GPG signature of the current GIT user.
+
+    Before running this command, you will need to generate a GPG
+    key with `gpg --gen-key` and then set that as your GIT
+    signing key with:
+
+    ```
+      git config --global user.signingkey KEY_ID
+    ```
+
+    With KEY_ID being the ID of the key (e.g. `1FA76C5D`).
 
   - `delete-sustaining-branches`  
     Deletes all `sustaining/X.Y.Z` branches from the current package.

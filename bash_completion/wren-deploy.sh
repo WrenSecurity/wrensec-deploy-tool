@@ -39,6 +39,7 @@ _wren_deploy_complete() {
     "help" \
     "version" \
     "create-sustaining-branches" \
+    "tag-sustaining-branches" \
     "delete-sustaining-branches" \
     "patch-all-releases" \
     "compile-all-releases" \
