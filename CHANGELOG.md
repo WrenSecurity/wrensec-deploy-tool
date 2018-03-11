@@ -10,6 +10,15 @@ and this project adheres to
 - Added experimental Bash completion support.
   See instructions at the top of `./bash_completion/wren-deploy.sh`.
 
+### Changed
+- Fixed critical regressions in `create-sustaining-branches` and 
+  `delete-sustaining-branches`.
+  
+- Makes minor changes to command output to make it easier to read.
+
+### Removed
+- Deprecated BinTray credential handling, since it is no longer needed in 2.x.
+
 ## 2.0.0 - 2018-03-10
 ### Added
 - Added this changelog file.
