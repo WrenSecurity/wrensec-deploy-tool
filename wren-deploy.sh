@@ -247,7 +247,7 @@ create_sustaining_branches() {
   package_create_all_sustaining_branches "${MAVEN_PACKAGE}"
 }
 
-delete-sustaining-branches() {
+delete_sustaining_branches() {
   package_load_config
 
   echo "Deleting all existing sustaining branches"
