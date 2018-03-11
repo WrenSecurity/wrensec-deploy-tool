@@ -258,7 +258,6 @@ package_sign_and_deploy_artifacts() {
       classifiers+=($classifier)
     done
 
-    declare -a deploy_classifiers=()
     declare -A deploy_files=()
 
     # Very special case: POM is signed, but everything else isn't (e.g. xercesImpl:2.9.1).
@@ -370,7 +369,7 @@ package_sign_and_deploy_consensus_signed_artifact() {
   declare -A artifact_index
 
   local passphrase_var="${WREN_THIRD_PARTY_SIGN_KEY_ID}_PASSPHRASE"
-  local path_regex="^(.+)\/([^\/]+)\/([^\/]+)\/(.+)-([0-9\.]+)(-(.*))?\.(.*)$"
+  local path_regex="^(.+)\/([^\/]+)\/([^\/]+)\/([a-z\-]+)-([0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]+)?(-[a-z]+(-[0-9]+|[0-9]+))?)(-([a-z]+[0-9]?))?\.(.*)$"
   local tmp_dir=$(mktemp -d '/tmp/wren-deploy.XXXXXXXXXX')
 
   # Index all the files and locate the POM
@@ -378,9 +377,9 @@ package_sign_and_deploy_consensus_signed_artifact() {
     if [[ $file =~ $path_regex ]]; then
       local group_id="${BASH_REMATCH[1]//\//.}"
       local artifact_id="${BASH_REMATCH[2]}"
-      local classifier="${BASH_REMATCH[7]}"
-      local version="${BASH_REMATCH[5]}"
-      local extension="${BASH_REMATCH[8]}"
+      local version="${BASH_REMATCH[3]}"
+      local classifier="${BASH_REMATCH[12]}"
+      local extension="${BASH_REMATCH[13]}"
 
       local combined_id="${group_id}:${artifact_id}:${version}"
       local path="${repo_base_path}/${file}"
@@ -429,30 +428,31 @@ package_sign_and_deploy_consensus_signed_artifact() {
       classifiers+=($classifier)
     done
 
-    declare -a deploy_classifiers=()
     declare -A deploy_files=()
 
-    for classifier in "${classifiers[@]}"; do
-      local path_key="${combined_id}_${classifier}_path"
-      local file_path="${artifact_index[$path_key]}"
-
-      if [ ! -f "${file_path}" ]; then
-        echo_error "ERROR: Unable to publish '${combined_id}' because the" \
-                   "artifact was unexpectedly not found at '${file_path}'." \
-                   "Skipping..."
-        echo_error ""
-      else
-        local base_name=$(basename "${file_path}")
-        local tmp_file_path="${tmp_dir}/${base_name}"
-
-        # Copy to temp path to avoid modifying the source files
-        cp "${file_path}" "${tmp_file_path}"
-
-        deploy_files["${classifier}"]=$tmp_file_path
-      fi
-    done
-
     local classifier_count="${#classifiers[@]}"
+
+    if [ "${classifier_count}" -gt 0 ]; then
+      for classifier in "${classifiers[@]}"; do
+        local path_key="${combined_id}_${classifier}_path"
+        local file_path="${artifact_index[$path_key]}"
+
+        if [ ! -f "${file_path}" ]; then
+          echo_error "ERROR: Unable to publish '${combined_id}' because the" \
+                     "artifact was unexpectedly not found at '${file_path}'." \
+                     "Skipping..."
+          echo_error ""
+        else
+          local base_name=$(basename "${file_path}")
+          local tmp_file_path="${tmp_dir}/${base_name}"
+
+          # Copy to temp path to avoid modifying the source files
+          cp "${file_path}" "${tmp_file_path}"
+
+          deploy_files["${classifier}"]=$tmp_file_path
+        fi
+      done
+    fi
 
     if [ -f "${pom_file}" ]; then
       local base_pom_name=$(basename "${pom_file}")
@@ -467,6 +467,9 @@ package_sign_and_deploy_consensus_signed_artifact() {
           "-DrepositoryId=${CONSENSUS_VERIFIED_REPO_ID}" \
           "-Durl=${CONSENSUS_VERIFIED_RELEASES_URL}" \
           "-Dfile=${tmp_pom_file_path}" \
+          "-DgroupId=${group_id}" \
+          "-DartifactId=${artifact_id}" \
+          "-Dversion=${version}" \
           "-Dgpg.keyname=${WREN_THIRD_PARTY_SIGN_KEY_ID}" \
           "-Dgpg.passphrase=${!passphrase_var}"
       else

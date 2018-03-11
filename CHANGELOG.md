@@ -16,15 +16,21 @@ and this project adheres to
 ### Changed
 - Fixed critical regressions in `create-sustaining-branches` and 
   `delete-sustaining-branches`.
-  
+
 - Fixed multiple critical issues when running the new 
   `capture-unapproved-artifact-sigs` command. Now the command actually gets the
   right artifact list, and commits it without error.
-  
+
+- Fixed POM-only publishing of consensus-verified artifacts when using
+  `deploy-consensus-verified-artifacts`.
+
+- Fixed regex for detecting consensus-verified artifacts that have a complex
+  path (e.g. `org/forgerock/commons/json-crypto/21.0.0-alpha-23/json-crypto-21.0.0-alpha-23-min.pom`).
+
 - Switched to using Maven when obtaining the package version in
   `capture-unapproved-artifact-sigs`, to handle the `master` branch and feature
   branches more gracefully.
-  
+
 - Makes minor changes to command output to make it easier to read.
 
 ### Removed
