@@ -464,7 +464,7 @@ package_capture_unapproved_sigs_for_current_version() {
     realpath "${wrensec_home_path}/.git" \
   )
 
-  local git_cmd="git '--work-tree=${wrensec_home_path}' '--git-dir=${git_dir}'"
+  local git_cmd="git --work-tree=${wrensec_home_path} --git-dir=${git_dir}"
 
   local package_name="${MAVEN_PACKAGE}"
   local package_version=$(git_get_current_sustaining_version)

@@ -17,6 +17,9 @@ and this project adheres to
 - Fixed critical regressions in `create-sustaining-branches` and 
   `delete-sustaining-branches`.
   
+- Fixed failure invoking GIT when running the new 
+  `capture-unapproved-artifact-sigs` command.
+  
 - Makes minor changes to command output to make it easier to read.
 
 ### Removed
