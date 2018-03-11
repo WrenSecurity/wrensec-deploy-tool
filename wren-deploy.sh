@@ -351,7 +351,7 @@ list_unapproved_artifact_sigs() {
   echo "Listing all dependencies with signatures not on the whitelist"
   echo ""
 
-  package_report_unapproved_sigs_for_current_version
+  package_get_all_unapproved_sigs_for_current_version
 }
 
 capture_unapproved_artifact_sigs() {

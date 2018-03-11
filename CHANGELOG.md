@@ -17,8 +17,9 @@ and this project adheres to
 - Fixed critical regressions in `create-sustaining-branches` and 
   `delete-sustaining-branches`.
   
-- Fixed failure invoking GIT when running the new 
-  `capture-unapproved-artifact-sigs` command.
+- Fixed multiple critical issues when running the new 
+  `capture-unapproved-artifact-sigs` command. Now the command actually gets the
+  right artifact list, and commits it without error.
   
 - Switched to using Maven when obtaining the package version in
   `capture-unapproved-artifact-sigs`, to handle the `master` branch and feature
