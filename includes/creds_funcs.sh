@@ -1,21 +1,6 @@
 ################################################################################
 # Credential Management Functions
 ################################################################################
-creds_prompt_for_bintray_credentials() {
-  if [ "${BINTRAY_USERNAME:-UNSET}" == "UNSET" ]; then
-    read -p "BinTray username: " BINTRAY_USERNAME
-  else
-    echo "Using BinTray username '${BINTRAY_USERNAME}'."
-  fi
-
-  if [ "${BINTRAY_PASSWORD:-UNSET}" == "UNSET" ]; then
-    read -s -p "BinTray password: " BINTRAY_PASSWORD
-    echo
-  else
-    echo "BinTray password is already set; not prompting."
-  fi
-}
-
 creds_prompt_for_jfrog_credentials() {
   if [ "${JFROG_USERNAME:-UNSET}" == "UNSET" ]; then
     read -p "JFrog username: " JFROG_USERNAME
