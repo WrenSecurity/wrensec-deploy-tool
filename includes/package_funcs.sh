@@ -20,17 +20,21 @@ package_create_all_sustaining_branches() {
 
     if git_branch_exists "${branch_name}"; then
       echo "Sustaining branch ${branch_name} already exists; skipping."
-      echo ""
     else
       git branch "${branch_name}" "${tag}"
+      echo "Created ${branch_name}."
     fi
   done
+
+  echo ""
 }
 
 package_delete_all_sustaining_branches() {
   for branch in $(git_list_release_branches); do
     git branch -D "${branch}"
   done
+
+  echo ""
 }
 
 package_compile_all_versions() {

@@ -244,6 +244,7 @@ create_sustaining_branches() {
   package_load_config
 
   echo "Creating all missing sustaining branches"
+  echo ""
   package_create_all_sustaining_branches "${MAVEN_PACKAGE}"
 }
 
@@ -251,6 +252,7 @@ delete_sustaining_branches() {
   package_load_config
 
   echo "Deleting all existing sustaining branches"
+  echo ""
   package_delete_all_sustaining_branches
 }
 
@@ -261,6 +263,8 @@ patch_all_releases() {
   local first_dst_rel_tag="${2:-UNSET}"
 
   echo "Patching all releases"
+  echo ""
+
   git_bulk_cherry_pick "${src_ref}" "${first_dst_rel_tag}"
 }
 
@@ -268,6 +272,8 @@ compile_all_releases() {
   package_load_config
 
   echo "Compiling all releases"
+  echo ""
+
   package_compile_all_versions
 }
 
@@ -275,6 +281,8 @@ compile_current_release() {
   package_load_config
 
   echo "Compiling current release"
+  echo ""
+
   package_compile_current_version
 }
 
@@ -282,6 +290,8 @@ deploy_all_releases() {
   package_load_config
 
   echo "Deploying all releases to JFrog"
+  echo ""
+
   package_deploy_all_versions
 }
 
@@ -289,6 +299,8 @@ deploy_current_release() {
   package_load_config
 
   echo "Deploying current release to JFrog"
+  echo ""
+
   package_deploy_current_version
 }
 
@@ -296,6 +308,8 @@ verify_all_releases() {
   package_load_config
 
   echo "Verifying PGP keys for all dependencies of all releases"
+  echo ""
+
   package_verify_keys_for_all_versions
 }
 
@@ -303,6 +317,8 @@ verify_current_release() {
   package_load_config
 
   echo "Verifying PGP keys for all dependencies of current release"
+  echo ""
+
   package_verify_keys_for_current_version
 }
 
@@ -310,7 +326,7 @@ list_unapproved_artifact_sigs() {
   package_load_config
 
   echo "Listing all dependencies with signatures not on the whitelist"
-  echo
+  echo ""
 
   package_report_unapproved_sigs_for_current_version
 }
@@ -370,6 +386,7 @@ deploy_consensus_verified_artifacts() {
   echo ""
   echo "Repo Root:   ${repo_root}"
   echo "Search Path: ${search_path}"
+  echo ""
 
   package_sign_and_deploy_consensus_signed_artifact \
     "${repo_root}" "${search_path}"
@@ -379,11 +396,15 @@ sign_3p_artifacts() {
   package_load_config
 
   echo "Signing unsigned third-party artifacts and deploying to JFrog"
+  echo ""
+
   package_sign_3p_artifacts_for_current_version
 }
 
 sign_tools_jar() {
   echo "Signing JDK 'tools.jar' and deploying signature to JFrog"
+  echo ""
+
   package_sign_tools_jar
 }
 
