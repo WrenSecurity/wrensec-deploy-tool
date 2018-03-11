@@ -1,7 +1,7 @@
 ################################################################################
 # Shared Constants
 ################################################################################
-export WRENDEPLOY_VERSION="2.0"
+export WRENDEPLOY_VERSION="2.1.0"
 export PGPVERIFY_VERSION="1.2.0-wren1"
 
 export WRENDEPLOY_RC=".wren-deploy.rc"
