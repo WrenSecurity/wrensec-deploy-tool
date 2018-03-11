@@ -11,7 +11,7 @@ package_create_all_sustaining_branches() {
       grep --invert-match -e "^forgerock/"\
   )
 
-  for tag in $(version_tags); do
+  for tag in ${version_tags[@]}; do
     local branch_name=$(\
       echo $tag | \
       sed "s/${maven_package}-//" | \
