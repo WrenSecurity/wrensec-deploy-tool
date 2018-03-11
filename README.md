@@ -84,7 +84,10 @@ Where `COMMAND` can be any of the following:
       multiple maintainers are making changes in the repository at the same 
       time.
 
-  - `deploy-consensus-verified-artifacts --repo-root=REPO-ROOT-PATH SEARCH-PATH`  
+  - `deploy-consensus-verified-artifacts 
+       --repo-root=REPO-ROOT-PATH SEARCH-PATH  
+       [--packaging=jar|pom|zip]`
+
     Searches `SEARCH_PATH` for all deployable artifacts, interpreting 
     `REPO-ROOT-PATH` as the root of the archived repository (i.e. this is the 
     equivalent to `~/.m2/repository`, but for an archived copy of a maven 
@@ -100,6 +103,12 @@ Where `COMMAND` can be any of the following:
         --repo-root=./forgerock-archive \
         ./forgerock-archive/org/forgerock/commons/ui/libs/form2js
     ```
+
+    The optional `--packaging` parameter can be used if there is a difference 
+    between the packaging specified in the POM file and the desired file 
+    extension on the remote server. For example, OSGi packages for Apache Felix
+    often have a POM packaging of 'bundle' but need to be deployed as a JAR.
+
 
   - `sign-3p-artifacts`  
     Generates GPG signatures for all unsigned third-party artifacts using the 

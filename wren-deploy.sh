@@ -133,7 +133,9 @@ function print_usage() {
   echo_error "      making changes in the repository at the same time."
   echo_error ""
   echo_error ""
-  echo_error "  - deploy-consensus-verified-artifacts --repo-root=REPO-ROOT-PATH SEARCH-PATH"
+  echo_error "  - deploy-consensus-verified-artifacts"
+  echo_error "      --repo-root=REPO-ROOT-PATH SEARCH-PATH"
+  echo_error "      [--packaging=jar|pom|zip]"
   echo_error "    Searches 'SEARCH_PATH' for all deployable artifacts,"
   echo_error "    interpreting 'REPO-ROOT-PATH' as the root of the archived"
   echo_error "    repository (i.e. this is the equivalent to"
@@ -149,6 +151,12 @@ function print_usage() {
   echo_error "      wren-deploy deploy-consensus-verified-artifact \\"
   echo_error "        --repo-root=./forgerock-archive \\"
   echo_error "        ./forgerock-archive/org/forgerock/commons/ui/libs/form2js"
+  echo_error ""
+  echo_error "    The optional '--packaging' parameter can be used if there is"
+  echo_error "    a difference between the packaging specified in the POM file"
+  echo_error "    and the desired file extension on the remote server. For"
+  echo_error "    example, OSGi packages for Apache Felix often have a"
+  echo_error "    POM packaging of 'bundle' but need to be deployed as a JAR."
   echo_error ""
   echo_error ""
   echo_error "  - sign-3p-artifacts"
@@ -384,6 +392,7 @@ capture_unapproved_artifact_sigs() {
 deploy_consensus_verified_artifacts() {
   local repo_root="${SUBCOMMAND_OPTIONS['repo-root']:-UNSET}"
   local search_path="${1:-UNSET}"
+  local packaging_override="${SUBCOMMAND_OPTIONS['packaging']:-UNSET}"
 
   if [ "${repo_root}" == "UNSET" ]; then
     echo_error "ERROR: '--repo-root' must be specified."
@@ -412,7 +421,7 @@ deploy_consensus_verified_artifacts() {
   echo ""
 
   package_sign_and_deploy_consensus_signed_artifact \
-    "${repo_root}" "${search_path}"
+    "${repo_root}" "${search_path}" "${packaging_override}"
 }
 
 sign_3p_artifacts() {

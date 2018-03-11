@@ -13,6 +13,9 @@ and this project adheres to
 - Added experimental Bash completion support.
   See instructions at the top of `./bash_completion/wren-deploy.sh`.
 
+- Added the ability to override POM packaging when invoking
+  `deploy-consensus-verified-artifacts`, to work around Felix OSGi bundles.
+
 ### Changed
 - Fixed critical regressions in `create-sustaining-branches` and 
   `delete-sustaining-branches`.

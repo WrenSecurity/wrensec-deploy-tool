@@ -354,6 +354,7 @@ package_sign_and_deploy_consensus_signed_artifact() {
 
   local repo_base_path=$(realpath "${1}")
   local search_path=$(realpath "${2}")
+  local packaging_override="${3:-UNSET}"
 
   local file_list=$(\
     find "${search_path}" \
@@ -475,12 +476,20 @@ package_sign_and_deploy_consensus_signed_artifact() {
       else
         for classifier in "${classifiers[@]}"; do
           local deploy_file="${deploy_files[${classifier}]}"
+          local packaging_param
+
+          if [ "${packaging_override}" != "UNSET" ]; then
+            packaging_param="-Dpackaging=${packaging_override}"
+          else
+            packaging_param=""
+          fi
 
           package_invoke_maven gpg:sign-and-deploy-file \
             "-DrepositoryId=${CONSENSUS_VERIFIED_REPO_ID}" \
             "-Durl=${CONSENSUS_VERIFIED_RELEASES_URL}" \
             "-Dfile=${deploy_file}" \
             "-DpomFile=${tmp_pom_file_path}" \
+            "${packaging_param}" \
             "-Dgpg.keyname=${WREN_THIRD_PARTY_SIGN_KEY_ID}" \
             "-Dgpg.passphrase=${!passphrase_var}"
         done

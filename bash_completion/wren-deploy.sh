@@ -73,8 +73,8 @@ _wren_deploy_complete() {
 
   ## Options: deploy-consensus-verified-artifacts ##
   elif [[ "${first_word}" == 'deploy-consensus-verified-artifacts' ]]; then
-    if [[ "${COMP_CWORD}" -eq 2 ]]; then
-      options_allowed=( '--repo-root=' )
+    if [[ "${COMP_CWORD}" -eq 2 || "${cur_word}" == -* ]]; then
+      options_allowed=( '--repo-root=' '--packaging=' )
 
       compopt -o nospace
 
