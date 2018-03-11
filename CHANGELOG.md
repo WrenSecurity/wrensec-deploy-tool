@@ -20,6 +20,10 @@ and this project adheres to
 - Fixed failure invoking GIT when running the new 
   `capture-unapproved-artifact-sigs` command.
   
+- Switched to using Maven when obtaining the package version in
+  `capture-unapproved-artifact-sigs`, to handle the `master` branch and feature
+  branches more gracefully.
+  
 - Makes minor changes to command output to make it easier to read.
 
 ### Removed

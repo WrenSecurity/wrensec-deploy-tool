@@ -279,7 +279,7 @@ package_sign_and_deploy_artifacts() {
 
 ##
 # Takes in repo base path and a search page, search for artifact files, signs
-# them, and deploys the, to BinTray.
+# them, and deploys them to BinTray.
 #
 # This is used for so-called "consensus verified" artifacts -- copies of
 # binaries from ForgeRock for which Wren does not yet have source code, that are
@@ -467,7 +467,7 @@ package_capture_unapproved_sigs_for_current_version() {
   local git_cmd="git --work-tree=${wrensec_home_path} --git-dir=${git_dir}"
 
   local package_name="${MAVEN_PACKAGE}"
-  local package_version=$(git_get_current_sustaining_version)
+  local package_version=$(package_get_mvn_version)
 
   echo "Appending dependencies to '${trusted_key_path}'"
   echo ""
@@ -554,6 +554,10 @@ package_load_config() {
   else
     source "${WRENDEPLOY_RC}"
   fi
+}
+
+package_get_mvn_version() {
+  mvn com.smartcodeltd:release-candidate-maven-plugin:LATEST:version --quiet
 }
 
 package_get_mvn_compile_args() {
