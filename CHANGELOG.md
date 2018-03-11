@@ -41,7 +41,7 @@ and this project adheres to
 
 - Added missing prompts for the GPG passphrase when using compile commands.
   
-- Added `help, `version`, and `--version` Commands
+- Added `help`, `version`, and `--version` Commands
 
 ### Changed
 - Switched release-related commands to observe `sustaining/` branches rather
