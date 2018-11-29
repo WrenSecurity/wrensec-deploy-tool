@@ -139,8 +139,14 @@ package_capture_unapproved_sigs_for_current_version() {
 
   local git_cmd="git --work-tree=${wrensec_whitelist_path} --git-dir=${git_dir}"
 
+  echo "Determining package name and version..."
   local package_name="${MAVEN_PACKAGE}"
   local package_version=$(package_get_mvn_version)
+
+  echo ""
+  echo "Package Name: ${package_name}"
+  echo "Package Version: ${package_version}"
+  echo ""
 
   echo "Appending dependencies to '${trusted_key_path}'"
   echo ""
