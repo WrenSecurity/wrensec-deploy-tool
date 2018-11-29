@@ -210,7 +210,9 @@ package_sign_and_deploy_artifacts() {
 
   local passphrase_var="${WREN_THIRD_PARTY_SIGN_KEY_ID}_PASSPHRASE"
   local package_regex="^([^:]+):([^:]+):([^:]+):(.+)$"
-  local tmpdir=$(mktemp -d '/tmp/wren-deploy.XXXXXXXXXX')
+  local tmpdir=$(create_tmp_dir)
+
+  delete_on_exit "${tmpdir}"
 
   # Index all the artifact files, so we can find the POM
   for artifact in "${artifact_list[@]}"; do
@@ -322,8 +324,6 @@ package_sign_and_deploy_artifacts() {
       fi
     done
   done
-
-  rm -rf "${tmpdir}"
 }
 
 ##
