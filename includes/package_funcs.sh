@@ -122,6 +122,27 @@ package_get_all_unapproved_sigs_for_current_version() {
     uniq
 }
 
+package_sort_and_dedupe_approved_sigs() {
+  local wrensec_whitelist_path="${1}"
+
+  local tmp_header_filename=$(create_tmp_file)
+  local tmp_deps_list_filename=$(create_tmp_file)
+
+  delete_on_exit "${tmp_header_filename}"
+  delete_on_exit "${tmp_deps_list_filename}"
+
+  sed -n '1,/^# Approved dependencies$/p' \
+    "${wrensec_whitelist_path}" > "${tmp_header_filename}"
+
+  sed -n '/^# Approved dependencies$/,$p' "${wrensec_whitelist_path}" | \
+    tail -n +2 |
+    sort --numeric |
+    uniq > "${tmp_deps_list_filename}"
+
+  cat "${tmp_header_filename}" "${tmp_deps_list_filename}" \
+    > "${wrensec_whitelist_path}"
+}
+
 package_capture_unapproved_sigs_for_current_version() {
   local wrensec_whitelist_path="${1}"
 
@@ -151,6 +172,8 @@ package_capture_unapproved_sigs_for_current_version() {
   echo "Appending dependencies to '${trusted_key_path}'"
   echo ""
   package_get_all_unapproved_sigs_for_current_version >> "${trusted_key_path}"
+
+  package_sort_and_dedupe_approved_sigs "${trusted_key_path}"
 
   echo "Changes:"
   echo ""
