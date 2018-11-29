@@ -110,8 +110,7 @@ package_verify_keys_for_current_version() {
   package_invoke_maven --batch-mode \
     org.simplify4u.plugins:pgpverify-maven-plugin:${PGPVERIFY_VERSION}:check \
     "-Dpgpverify.keysMapLocation=${WREN_DEP_PGP_WHITELIST_URL}" \
-    "-DpgpVerifyWhitelist=${WREN_DEP_PGP_WHITELIST_URL}" \
-    "-Dignore-artifact-sigs"
+    "-DpgpVerifyWhitelist=${WREN_DEP_PGP_WHITELIST_URL}"
 }
 
 package_get_all_unapproved_sigs_for_current_version() {
