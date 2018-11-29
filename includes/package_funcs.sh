@@ -107,7 +107,7 @@ package_verify_keys_for_current_version() {
   # TODO: Consider building this in as a separate profile in the parent POM
   # Maven can probably do a better job with this than Bash
   #
-  package_invoke_maven \
+  package_invoke_maven --batch-mode \
     org.simplify4u.plugins:pgpverify-maven-plugin:${PGPVERIFY_VERSION}:check \
     "-Dpgpverify.keysMapLocation=${WREN_DEP_PGP_WHITELIST_URL}" \
     "-DpgpVerifyWhitelist=${WREN_DEP_PGP_WHITELIST_URL}" \
