@@ -108,8 +108,9 @@ package_verify_keys_for_current_version() {
   # Maven can probably do a better job with this than Bash
   #
   package_invoke_maven \
-    com.github.s4u.plugins:pgpverify-maven-plugin:${PGPVERIFY_VERSION}:check \
-    "-Dpgpverify.keysMapLocation=${WREN_DEP_KEY_WHITELIST_URL}" \
+    org.simplify4u.plugins:pgpverify-maven-plugin:${PGPVERIFY_VERSION}:check \
+    "-Dpgpverify.keysMapLocation=${WREN_DEP_PGP_WHITELIST_URL}" \
+    "-DpgpVerifyWhitelist=${WREN_DEP_PGP_WHITELIST_URL}" \
     "-Dignore-artifact-sigs"
 }
 
@@ -123,21 +124,21 @@ package_get_all_unapproved_sigs_for_current_version() {
 }
 
 package_capture_unapproved_sigs_for_current_version() {
-  local wrensec_home_path="${1}"
+  local wrensec_whitelist_path="${1}"
 
   local should_amend="${2}"
   local should_push="${3}"
   local should_force="${4}"
 
   local trusted_key_path=$(\
-    realpath "${wrensec_home_path}/${WREN_DEP_KEY_WHITELIST_FILENAME}" \
+    realpath "${wrensec_whitelist_path}/${WREN_DEP_PGP_WHITELIST_RESOURCE_PATH}" \
   )
 
   local git_dir=$(\
-    realpath "${wrensec_home_path}/.git" \
+    realpath "${wrensec_whitelist_path}/.git" \
   )
 
-  local git_cmd="git --work-tree=${wrensec_home_path} --git-dir=${git_dir}"
+  local git_cmd="git --work-tree=${wrensec_whitelist_path} --git-dir=${git_dir}"
 
   local package_name="${MAVEN_PACKAGE}"
   local package_version=$(package_get_mvn_version)
@@ -178,7 +179,7 @@ package_capture_unapproved_sigs_for_current_version() {
 
 package_sign_3p_artifacts_for_current_version() {
   local target_artifact_ids=( $(package_get_all_unsigned_3p_artifacts) )
-
+  
   creds_prompt_for_gpg_credentials "${WREN_THIRD_PARTY_SIGN_KEY_ID}"
 
   package_sign_and_deploy_artifacts target_artifact_ids

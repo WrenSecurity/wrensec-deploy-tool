@@ -103,26 +103,27 @@ function print_usage() {
   echo_error "  - list-unapproved-artifact-sigs"
   echo_error "    Lists the name and GPG signature of each artifact dependency"
   echo_error "    that is not on the Wren whitelist. The whitelist is located"
-  echo_error "    at '${WREN_DEP_KEY_WHITELIST_URL}'."
+  echo_error "    at '${WREN_DEP_PGP_WHITELIST_URL}'."
   echo_error ""
   echo_error ""
-  echo_error "  - capture-unapproved-artifact-sigs WRENSEC-HOME-PATH [--push] [--amend] [--force]"
+  echo_error "  - capture-unapproved-artifact-sigs WRENSEC-WHITELIST-PATH "
+  echo_error "      [--push] [--amend] [--force]"
   echo_error "    Appends the name and GPG signature of each artifact"
   echo_error "    dependency to the whitelist in a checked-out copy of the"
-  echo_error "    'wrensec-home' project, then commits the change. This can be"
+  echo_error "    'wrensec-pgp-whitelist' project, then commits the change. This can be"
   echo_error "    used to rapidly add multiple artifacts to the whitelist with"
   echo_error "    a minimum of manual effort."
   echo_error ""
   echo_error "    Options:"
   echo_error "      --push"
   echo_error "      Pushes the resulting changes to the default remote of the"
-  echo_error "      'wrensec-home' project."
+  echo_error "      'wrensec-pgp-whitelist' project."
   echo_error ""
   echo_error "      --amend"
-  echo_error "      Amends the previous commit of the 'wrensec-home' project,"
-  echo_error "      instead of creating a new commit. Used with caution, this"
-  echo_error "      option allows a maintainer to iterate on dependency"
-  echo_error "      signatures for an artifact as build failures are"
+  echo_error "      Amends the previous commit of the 'wrensec-pgp-whitelist' "
+  echo_error "      project, instead of creating a new commit. Used with "
+  echo_error "      caution, this option allows a maintainer to iterate on "
+  echo_error "      dependency signatures for an artifact as build failures are"
   echo_error "      encountered during re-packaging."
   echo_error ""
   echo_error "      --force"
@@ -365,15 +366,15 @@ list_unapproved_artifact_sigs() {
 capture_unapproved_artifact_sigs() {
   package_load_config
 
-  local wrensec_home_path="${1:-UNSET}"
+  local wrensec_whitelist_path="${1:-UNSET}"
 
-  if [ "${wrensec_home_path}" == "UNSET" ]; then
-    echo_error "ERROR: WRENSEC-HOME-PATH must be specified."
+  if [ "${wrensec_whitelist_path}" == "UNSET" ]; then
+    echo_error "ERROR: WRENSEC-WHITELIST-PATH must be specified."
     fail_on_command_args
   fi;
 
-  if [ ! -d "${wrensec_home_path}/.git" ]; then
-    echo_error "ERROR: WRENSEC-HOME-PATH must exist and contain a GIT" \
+  if [ ! -d "${wrensec_whitelist_path}/.git" ]; then
+    echo_error "ERROR: WRENSEC-WHITELIST-PATH must exist and contain a GIT" \
                "repository."
     fail_on_command_args
   fi;
@@ -386,7 +387,7 @@ capture_unapproved_artifact_sigs() {
   echo ""
 
   package_capture_unapproved_sigs_for_current_version \
-    "${wrensec_home_path}" "${amend}" "${push}" "${force}"
+    "${wrensec_whitelist_path}" "${amend}" "${push}" "${force}"
 }
 
 deploy_consensus_verified_artifacts() {

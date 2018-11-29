@@ -60,25 +60,26 @@ Where `COMMAND` can be any of the following:
     the Wren whitelist. The whitelist is located at
     http://wrensecurity.org/trustedkeys.properties.
 
-  - `capture-unapproved-artifact-sigs WRENSEC-HOME-PATH [--push] [--amend] [--force]`  
+  - `capture-unapproved-artifact-sigs WRENSEC-WHITELIST-PATH
+      [--push] [--amend] [--force]`
     Appends the name and GPG signature of each artifact dependency to the 
-    whitelist in a checked-out copy of the `wrensec-home` project, then commits 
-    the change. This can be used to rapidly add multiple artifacts to the 
-    whitelist with a minimum of manual effort.
+    whitelist in a checked-out copy of the 'wrensec-pgp-whitelist' project, then 
+    commits the change. This can be used to rapidly add multiple artifacts to 
+    the whitelist with a minimum of manual effort.
 
     **Options:**
     - `--push`  
-      Pushes the resulting changes to the default remote of the `wrensec-home`
-      project.
+      Pushes the resulting changes to the default remote of the 
+      `wrensec-pgp-whitelist` project.
 
     - `--amend`  
-      Amends the previous commit of the 'wrensec-home' project, instead of 
-      creating a new commit. Used with caution, this option allows a maintainer 
-      to iterate on dependency signatures for an artifact as build failures are
-      encountered during re-packaging.
+      Amends the previous commit of the 'wrensec-pgp-whitelist' project, instead 
+      of creating a new commit. Used with caution, this option allows a 
+      maintainer to iterate on dependency signatures for an artifact as build 
+      failures are encountered during re-packaging.
 
     - `--force`  
-      When used with --push, the last commit is force-pushed to the default 
+      When used with `--push`, the last commit is force-pushed to the default 
       remote. This should be used with caution as it re-writes repository 
       history and can result in a loss of other changes in the project if 
       multiple maintainers are making changes in the repository at the same 
