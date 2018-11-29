@@ -62,15 +62,13 @@ package_compile_all_versions() {
 }
 
 package_compile_current_version() {
-  local compile_args=$(package_get_mvn_compile_args)
   local passphrase_var="${WREN_OFFICIAL_SIGN_KEY_ID}_PASSPHRASE"
 
   creds_prompt_for_gpg_credentials "${WREN_OFFICIAL_SIGN_KEY_ID}"
 
-  package_invoke_maven clean install ${compile_args} \
-    "-Psign,forgerock-release" \
-    "-Dgpg.keyname=${WREN_OFFICIAL_SIGN_KEY_ID}" \
-    "-Dgpg.passphrase=${!passphrase_var}"
+  local compile_args=$(package_get_mvn_compile_args ${WREN_OFFICIAL_SIGN_KEY_ID} ${!passphrase_var})
+
+  package_invoke_maven clean install ${compile_args}
 }
 
 package_deploy_all_versions() {
@@ -85,15 +83,13 @@ package_deploy_all_versions() {
 }
 
 package_deploy_current_version() {
-  local compile_args=$(package_get_mvn_compile_args)
   local passphrase_var="${WREN_OFFICIAL_SIGN_KEY_ID}_PASSPHRASE"
 
   creds_prompt_for_gpg_credentials "${WREN_OFFICIAL_SIGN_KEY_ID}"
 
-  package_invoke_maven clean deploy ${compile_args} \
-    "-Psign,forgerock-release" \
-    "-Dgpg.keyname=${WREN_OFFICIAL_SIGN_KEY_ID}" \
-    "-Dgpg.passphrase=${!passphrase_var}"
+  local compile_args=$(package_get_mvn_compile_args ${WREN_OFFICIAL_SIGN_KEY_ID} ${!passphrase_var})
+
+  package_invoke_maven clean deploy ${compile_args}
 }
 
 package_verify_keys_for_all_versions() {
@@ -573,8 +569,20 @@ package_get_mvn_version() {
 }
 
 package_get_mvn_compile_args() {
-  local default_compile_args=${WREN_DEFAULT_MVN_COMPILE_ARGS:-}
-  local compile_args=${MVN_COMPILE_ARGS:-${default_compile_args}}
+  local signing_key_name="$1"
+  local signing_key_passphrase="$2"
+
+  local signing_args=(
+    "-Psign,forgerock-release,full-release"
+    "-Dgpg.keyname=${signing_key_name}"
+    "-Dgpg.passphrase=${signing_key_passphrase}"
+  )
+
+  # Defaults inherited from the environment
+  local default_compile_args="${WREN_DEFAULT_MVN_COMPILE_ARGS:-}"
+
+  # Overrides provided by the project itself.
+  local compile_args="${MVN_COMPILE_ARGS:-${default_compile_args}} ${signing_args[*]}"
 
   echo $compile_args
 }
