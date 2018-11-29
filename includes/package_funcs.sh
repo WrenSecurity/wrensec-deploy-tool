@@ -155,11 +155,13 @@ package_capture_unapproved_sigs_for_current_version() {
   echo ""
   ${git_cmd} add "${trusted_key_path}"
 
-  if [ "${should_amend}" == "1" ]; then
+  commit_message="Add deps for \`${package_name}\` (${package_version})"
+  head_message=$(${git_cmd} show -s --format=%s HEAD)
+
+  if [[ "${should_amend}" == "1" || \
+        "${head_message}" == "${commit_message}" ]]; then
     ${git_cmd} commit --amend --no-edit
   else
-    commit_message="Add deps for \`${package_name}\` (${package_version})"
-
     ${git_cmd} commit "--message=${commit_message}" --no-edit
   fi
 

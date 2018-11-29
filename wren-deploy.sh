@@ -107,28 +107,38 @@ function print_usage() {
   echo_error ""
   echo_error ""
   echo_error "  - capture-unapproved-artifact-sigs WRENSEC-WHITELIST-PATH "
-  echo_error "      [--push] [--amend] [--force]"
+  echo_error "      [--push] [--force-amend] [--force]"
   echo_error "    Appends the name and GPG signature of each artifact"
   echo_error "    dependency to the whitelist in a checked-out copy of the"
-  echo_error "    'wrensec-pgp-whitelist' project, then commits the change. This can be"
-  echo_error "    used to rapidly add multiple artifacts to the whitelist with"
-  echo_error "    a minimum of manual effort."
+  echo_error "    'wrensec-pgp-whitelist' project, then commits the change."
+  echo_error "    This can be used to rapidly add multiple artifacts to the"
+  echo_error "    whitelist with a minimum of manual effort."
   echo_error ""
   echo_error "    Options:"
   echo_error "      --push"
   echo_error "      Pushes the resulting changes to the default remote of the"
   echo_error "      'wrensec-pgp-whitelist' project."
   echo_error ""
-  echo_error "      --amend"
-  echo_error "      Amends the previous commit of the 'wrensec-pgp-whitelist' "
-  echo_error "      project, instead of creating a new commit. Used with "
-  echo_error "      caution, this option allows a maintainer to iterate on "
-  echo_error "      dependency signatures for an artifact as build failures are"
-  echo_error "      encountered during re-packaging."
+  echo_error "      --force-amend"
+  echo_error "      Forcibly amends the previous commit of the"
+  echo_error "      'wrensec-pgp-whitelist' project, instead of creating a"
+  echo_error "      new commit."
+  echo_error ""
+  echo_error "      Amending allows a maintainer to iterate on dependency"
+  echo_error "      signatures for an artifact as he or she encounters build"
+  echo_error "      failures while preparing a release of the artifact."
+  echo_error ""
+  echo_error "      This tool automatically determines if it should amend the"
+  echo_error "      last commit or create a new commit, based on the subject"
+  echo_error "      line of HEAD. Therefore, it is typically not necessary to"
+  echo_error "      use this option unless automatic commit handling is not"
+  echo_error "      working properly. Use with care to avoid rewriting the"
+  echo_error "      history of commits that have already been shared."
   echo_error ""
   echo_error "      --force"
-  echo_error "      When used with --push, the last commit is force-pushed to"
-  echo_error "      the default remote. This should be used with caution as it"
+  echo_error "      When used with --push, the last commit of the"
+  echo_error "      'wrensec-pgp-whitelist' project is force-pushed to the"
+  echo_error "      default remote. This should be used with caution as it"
   echo_error "      re-writes repository history and can result in a loss of"
   echo_error "      other changes in the project if multiple maintainers are"
   echo_error "      making changes in the repository at the same time."
@@ -379,7 +389,7 @@ capture_unapproved_artifact_sigs() {
     fail_on_command_args
   fi;
 
-  local amend=${SUBCOMMAND_OPTIONS['amend']+1}
+  local force_amend=${SUBCOMMAND_OPTIONS['force-amend']+1}
   local push=${SUBCOMMAND_OPTIONS['push']+1}
   local force=${SUBCOMMAND_OPTIONS['force']+1}
 
@@ -387,7 +397,7 @@ capture_unapproved_artifact_sigs() {
   echo ""
 
   package_capture_unapproved_sigs_for_current_version \
-    "${wrensec_whitelist_path}" "${amend}" "${push}" "${force}"
+    "${wrensec_whitelist_path}" "${force_amend}" "${push}" "${force}"
 }
 
 deploy_consensus_verified_artifacts() {

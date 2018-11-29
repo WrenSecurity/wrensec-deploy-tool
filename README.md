@@ -61,9 +61,9 @@ Where `COMMAND` can be any of the following:
     http://wrensecurity.org/trustedkeys.properties.
 
   - `capture-unapproved-artifact-sigs WRENSEC-WHITELIST-PATH
-      [--push] [--amend] [--force]`
+      [--push] [--force-amend] [--force]`  
     Appends the name and GPG signature of each artifact dependency to the 
-    whitelist in a checked-out copy of the 'wrensec-pgp-whitelist' project, then 
+    whitelist in a checked-out copy of the `wrensec-pgp-whitelist` project, then 
     commits the change. This can be used to rapidly add multiple artifacts to 
     the whitelist with a minimum of manual effort.
 
@@ -72,18 +72,26 @@ Where `COMMAND` can be any of the following:
       Pushes the resulting changes to the default remote of the 
       `wrensec-pgp-whitelist` project.
 
-    - `--amend`  
-      Amends the previous commit of the 'wrensec-pgp-whitelist' project, instead 
-      of creating a new commit. Used with caution, this option allows a 
-      maintainer to iterate on dependency signatures for an artifact as build 
-      failures are encountered during re-packaging.
+    - `--force-amend`  
+      Forcibly amends the previous commit of the `wrensec-pgp-whitelist` 
+      project, instead of creating a new commit.
+
+      Amending allows a maintainer to iterate on dependency signatures for an 
+      artifact as he or she encounters build failures while preparing a release 
+      of the artifact.
+
+      This tool automatically determines if it should amend the last commit or 
+      create a new commit, based on the subject line of HEAD. Therefore, it is 
+      typically not necessary to use this option unless automatic commit 
+      handling is not working properly. Use with care to avoid rewriting the
+      history of commits that have already been shared.
 
     - `--force`  
-      When used with `--push`, the last commit is force-pushed to the default 
-      remote. This should be used with caution as it re-writes repository 
-      history and can result in a loss of other changes in the project if 
-      multiple maintainers are making changes in the repository at the same 
-      time.
+      When used with `--push`, the last commit of the `wrensec-pgp-whitelist` 
+      project is force-pushed to the default remote. This should be used with 
+      caution as it re-writes repository history and can result in a loss of 
+      other changes in the project if multiple maintainers are making changes in 
+      the repository at the same time.
 
   - `deploy-consensus-verified-artifacts 
        --repo-root=REPO-ROOT-PATH SEARCH-PATH  

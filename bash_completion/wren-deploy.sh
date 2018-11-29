@@ -96,7 +96,7 @@ _wren_deploy_complete() {
       _wren_complete_path
 
     elif [[ "${COMP_CWORD}" -gt 2 ]]; then
-      options_allowed=( '--push' '--amend' '--force' )
+      options_allowed=( '--push' '--force-amend' '--force' )
 
       COMPREPLY=( $(compgen -W "${options_allowed[*]}" -- "${cur_word}") )
     fi
