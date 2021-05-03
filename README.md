@@ -1,6 +1,6 @@
 # Wren Deploy
 A swiss-army command-line tool for managing, compiling, and publishing multiple
-versions of a Maven package and then deploying them to BinTray or JFrog.
+versions of a Maven package and then deploying them to JFrog.
 
 Usage: `wren-deploy.sh <COMMAND>`
 
@@ -101,9 +101,9 @@ Where `COMMAND` can be any of the following:
     `REPO-ROOT-PATH` as the root of the archived repository (i.e. this is the 
     equivalent to `~/.m2/repository`, but for an archived copy of a maven 
     repository). Each artifact recognized is copied to a temporary folder, 
-    signed using the Wren Security third-party key, then deployed to BinTray 
+    signed using the Wren Security third-party key, then deployed to JFrog 
     under this project:
-    https://bintray.com/wrensecurity/forgerock-archive/consensus-verified.
+    https://wrensecurity.jfrog.io/artifactory/forgerock-archive.
     
     For example, this would deploy `form2js` from a local Maven repository
     archive located in `./forgerock-archive`:

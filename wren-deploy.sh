@@ -4,8 +4,7 @@
 # Wren Deployment Tool
 # ====================
 # A swiss-army command-line tool for managing, compiling, and publishing
-# multiple versions of a Maven package and then deploying them to BinTray or
-# JFrog.
+# multiple versions of a Maven package and then deploying them to JFrog.
 #
 # @author Kortanul (kortanul@protonmail.com)
 #
@@ -29,7 +28,7 @@ function print_usage() {
 
   echo_error "Wren Deploy -- A swiss-army command-line tool for managing,"
   echo_error "compiling, and publishing multiple versions of a Maven package"
-  echo_error "and then deploying them to BinTray or JFrog."
+  echo_error "and then deploying them to JFrog."
   echo_error ""
   echo_error "Usage: ${script_name} <COMMAND>"
   echo_error ""
@@ -153,8 +152,8 @@ function print_usage() {
   echo_error "    '~/.m2/repository', but for an archived copy of a maven"
   echo_error "    repository). Each artifact recognized is copied to a"
   echo_error "    temporary folder, signed using the Wren Security third-party"
-  echo_error "    key, then deployed to BinTray under this project:"
-  echo_error "    https://bintray.com/wrensecurity/forgerock-archive/consensus-verified."
+  echo_error "    key, then deployed to JFrog under this project:"
+  echo_error "    https://wrensecurity.jfrog.io/artifactory/forgerock-archive."
   echo_error ""
   echo_error "    For example, this would deploy 'form2js' from a local Maven"
   echo_error "    repository archive located in './forgerock-archive':"
@@ -425,7 +424,7 @@ deploy_consensus_verified_artifacts() {
     fail_on_command_args
   fi;
 
-  echo "Searching for archived artifacts to deploy to BinTray"
+  echo "Searching for archived artifacts to deploy to JFrog"
   echo ""
   echo "Repo Root:   ${repo_root}"
   echo "Search Path: ${search_path}"

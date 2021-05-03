@@ -359,7 +359,7 @@ package_sign_and_deploy_artifacts() {
 
 ##
 # Takes in repo base path and a search page, search for artifact files, signs
-# them, and deploys them to BinTray.
+# them, and deploys them to JFrog.
 #
 # This is used for so-called "consensus verified" artifacts -- copies of
 # binaries from ForgeRock for which Wren does not yet have source code, that are
@@ -388,6 +388,7 @@ package_sign_and_deploy_consensus_signed_artifact() {
       -type f \
       -not -name '*.md5' \
       -not -name '*.sha1' \
+      -not -name '*-lastUpdated.properties' \
       -not -name '*.lastUpdated' \
       -not -name '_*.*' | \
     sed "s!${repo_base_path}\/!!" \
@@ -397,36 +398,45 @@ package_sign_and_deploy_consensus_signed_artifact() {
   declare -A artifact_index
 
   local passphrase_var="${WREN_THIRD_PARTY_SIGN_KEY_ID}_PASSPHRASE"
-  local path_regex="^(.+)\/([^\/]+)\/([^\/]+)\/([a-z\-]+)-([0-9]+(\.[0-9]+)?(\.[0-9]+)?(\.[0-9]+)?(-[a-z]+(-[0-9]+|[0-9]+))?)(-([a-z]+[0-9]?))?\.(.*)$"
   local tmp_dir=$(mktemp -d '/tmp/wren-deploy.XXXXXXXXXX')
 
   # Index all the files and locate the POM
   for file in ${file_list}; do
-    if [[ $file =~ $path_regex ]]; then
-      local group_id="${BASH_REMATCH[1]//\//.}"
-      local artifact_id="${BASH_REMATCH[2]}"
-      local version="${BASH_REMATCH[3]}"
-      local classifier="${BASH_REMATCH[12]}"
-      local extension="${BASH_REMATCH[13]}"
+    local group_path=$(dirname $(dirname $(dirname "$file")))
+    local group_id="${group_path//\//.}"
+    local artifact_id=$(basename $(dirname $(dirname "$file")))
+    local version=$(basename $(dirname "$file"))
+    local filename=$(basename "$file")
+    if [[ $group_id == "." ]] || [[ ! $version =~ ^[0-9] ]] || [[ $version == *-SNAPSHOT ]]; then
+      continue # Invalid directory or snapshot version
+    fi
+    if [[ ! $filename == $artifact_id-$version* ]]; then
+      continue # Invalid filename
+    fi
+    local extension="${filename##*.}"
+    local classifier=""
+    if [[ $filename == $artifact_id-$version-* ]]; then
+      classifier=${filename#$artifact_id-$version-}
+      classifier="${classifier%.$extension}"
+    fi
 
-      local combined_id="${group_id}:${artifact_id}:${version}"
-      local path="${repo_base_path}/${file}"
+    local combined_id="${group_id}:${artifact_id}:${version}"
+    local path="${repo_base_path}/${file}"
 
-      # We're using a hash to de-dupe the IDs for us
-      combined_artifact_ids["${combined_id}"]=1
+    # We're using a hash to de-dupe the IDs for us
+    combined_artifact_ids["${combined_id}"]=1
 
-      artifact_index["${combined_id}_group_id"]="${group_id}"
-      artifact_index["${combined_id}_artifact_id"]="${artifact_id}"
-      artifact_index["${combined_id}_version"]="${version}"
+    artifact_index["${combined_id}_group_id"]="${group_id}"
+    artifact_index["${combined_id}_artifact_id"]="${artifact_id}"
+    artifact_index["${combined_id}_version"]="${version}"
 
-      if [ "${extension}" == "pom" ]; then
-        artifact_index["${combined_id}_pom_file"]="${path}"
-      else
-        local classifier_and_ext="${classifier}-${extension}"
+    if [ "${extension}" == "pom" ]; then
+      artifact_index["${combined_id}_pom_file"]="${path}"
+    else
+      local classifier_and_ext="${classifier}-${extension}"
 
-        artifact_index["${combined_id}_classifiers"]+="${classifier_and_ext} "
-        artifact_index["${combined_id}_${classifier_and_ext}_path"]="${path}"
-      fi
+      artifact_index["${combined_id}_classifiers"]+="${classifier_and_ext} "
+      artifact_index["${combined_id}_${classifier_and_ext}_path"]="${path}"
     fi
   done
 
@@ -507,6 +517,8 @@ package_sign_and_deploy_consensus_signed_artifact() {
 
           if [ "${packaging_override}" != "UNSET" ]; then
             packaging_param="-Dpackaging=${packaging_override}"
+          elif [[ $deploy_file == *.jar ]]; then
+            packaging_param="-Dpackaging=jar"
           else
             packaging_param=""
           fi
@@ -631,7 +643,6 @@ package_invoke_maven() {
     fi
   done
 
-  echo mvn ${clean_args[@]}
   mvn ${maven_args[@]}
 }
 

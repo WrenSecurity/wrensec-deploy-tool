@@ -36,6 +36,8 @@ and this project adheres to
 
 - Makes minor changes to command output to make it easier to read.
 
+- Replaced all occurences of BinTray with JFrog as BinTray is no longer used.
+
 ### Removed
 - Deprecated BinTray credential handling, since it is no longer needed in 2.x.
 
