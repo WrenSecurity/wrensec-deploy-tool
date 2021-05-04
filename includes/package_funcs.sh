@@ -513,14 +513,10 @@ package_sign_and_deploy_consensus_signed_artifact() {
       else
         for classifier in "${classifiers[@]}"; do
           local deploy_file="${deploy_files[${classifier}]}"
-          local packaging_param
+          local packaging_param="-Dpackaging=${classifier##*-}"
 
           if [ "${packaging_override}" != "UNSET" ]; then
             packaging_param="-Dpackaging=${packaging_override}"
-          elif [[ $deploy_file == *.jar ]]; then
-            packaging_param="-Dpackaging=jar"
-          else
-            packaging_param=""
           fi
 
           package_invoke_maven gpg:sign-and-deploy-file \
@@ -529,6 +525,7 @@ package_sign_and_deploy_consensus_signed_artifact() {
             "-Dfile=${deploy_file}" \
             "-DpomFile=${tmp_pom_file_path}" \
             "${packaging_param}" \
+            "-Dclassifier=${classifier%-*}" \
             "-Dgpg.keyname=${WREN_THIRD_PARTY_SIGN_KEY_ID}" \
             "-Dgpg.passphrase=${!passphrase_var}"
         done
